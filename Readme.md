@@ -1,23 +1,21 @@
 # CrossGhost
 
-Detached fork is based on grappigegovert's [LocalGhost](https://gitlab.com/grappigegovert/localghost).
+This fork is based on grappigegovert's previous work: [LocalGhost](https://gitlab.com/grappigegovert/localghost). 
 
-## LocalGhost Crossplay fork
+The aim is to bring Ghost Mode Crossplay to life between Steam and Epic Games players.
 
-This fork integrates the room-code API and UDP relay with the existing backend
-in **one container**, using **https://hitmanghost.ramon.cc** for both.
+## Players
 
-```sh
-docker compose up -d --build
-```
+The setup process for players is super simple. You'll need the requirements down below:
 
-Connect your existing HTTPS proxy to **TCP 47047** and allow **UDP 30002** on the
-VPS. Profiles persist in a named volume. See [deployment and player flow](docs/ghost-crossplay.md).
+- [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK) installed
+- [Simple Mod Framework (SMF)](https://github.com/atampy25/simple-mod-framework) installed
+- CrossGhost mod downloaded
+- [Ghost Mode Assets Mod](https://www.nexusmods.com/hitman3/mods/260) installed (made by MrMike)
 
-The GhostCrossplay DLL uses **Host → room code → Join** and configures the backend
-itself. The original project's patcher instructions below apply to legacy clients.
+The install instructions for each of those is best found on their respective GitHub/Nexus Mods pages.
 
-## Original project
+#### Original README (not applicable to players and server hosters anymore)
 
 This started off as a barebones server replacement for ghost mode only, but it has grown a bit since.
 
@@ -35,7 +33,7 @@ Things of note:
 - On mission completion the game will grant you a placeholder challenge 'Old rusty wrench'. I did that because the screen looks so empty otherwise.
 - Ghost mode matchmaking is (still) not implemented. Inviting is the way to go.
 
-# Players
+##### Players
 
 **NOTE: ~~Ghost Mode (currently) only works in Hitman™ 2~~**  
 **There is now a mod for (the steam version of) Hitman 3 that ports the files that are missing to make ghost mode possible from H2.**  
@@ -46,7 +44,7 @@ To use this software, download the patcher [here](https://gitlab.com/grappigegov
 Open the patcher and enter the IP address or domain name of the server you want to connect to.
 Make sure the patcher is running while you start the game.
 
-## Public servers : 
+##### Public servers : 
 _These servers are kindly provided by members of the community. I am not responsible for any custom content they might host._
 
 | Host | Server content | Server region |
@@ -62,7 +60,7 @@ It should be obvious, but two players have to be connected to the same server to
 
 Happy ghosting!
 
-# Server hosters
+##### Server hosters
 
 For this fork, use NodeJS 22 or the container described above.
 
@@ -73,16 +71,16 @@ Set `PUBLIC_ORIGIN` to the externally reachable origin when running outside the
 default deployment; it defaults to `https://hitmanghost.ramon.cc`. The integrated
 relay also listens on UDP 30002.
 
-### Custom tiles
+##### Custom tiles
 In the menudata folder, there are two json files, `serverTile.template.json` and `featuredContracts.template.json`. These can be copied to `serverTile.json` and `featuredContracts.json` respectively and edited to suit your needs.
 Each gameversion (h1, h2, or h3) uses its own version of the `featuredContracts.json` file.
 
 `serverTile.json` controls the 'Current Server' livetile in the menu, and `featuredContracts.json` is a list of contractIds for contracts you want to display in the menu. Note that any contract you list here must have its contract data saved in the contractdata folder.
 
 
-# Developers
+##### Developers
 
-## Experimental store-independent lobby backend
+##### Experimental store-independent lobby backend
 
 This workspace adds a separate host/join-code API for future Steam/Epic native
 clients. It handles two-player rooms, compatibility, readiness and disconnects;
@@ -91,7 +89,7 @@ gameplay crossplay. See [the v1 API and native-client boundary](docs/ghost-lobby
 Use Node 22 and loopback-only testing: the legacy authentication is not safe for
 public hosting. Existing game-facing multiplayer endpoints remain unchanged.
 
-## Server
+##### Server
 
 The server is written in NodeJS and serves as replacement for all http(s) servers that the game connects to.
 Without the patcher, the first connection the game makes is to `config.hitman.io` which serves some json that contains all other domains the game should use.
@@ -104,10 +102,10 @@ This means that most of the code is in the h3 subdirectories, with only some ver
 
 To run this fork directly, use NodeJS 22.
 
-### Set-up
+##### Set-up
 To install all the dependencies, run `npm install`. Now you can run `node serb.js` to start the server.
 
-### Folder structure
+##### Folder structure
 - components (Parts of the server, split up into components)
 - contractdata (Contracts - two, currently, one for each of the two ghost mode maps)
 - menudata (Files that dictate the contents of game menus)
@@ -119,7 +117,7 @@ To install all the dependencies, run `npm install`. Now you can run `node serb.j
 - static (Some miscellaneous files that the server sends)
 - userdata (Data for all users that connect to the server, plus some default data)
 
-## Patcher
+##### Patcher
 
 The patcher is written in C# using .NET Framework 4.0. While the patcher is running, it patches all unpatched processes named "HITMAN.EXE", "HITMAN2.EXE", or "HITMAN3.exe" once every second.
 The 'Patching' involves changing some bytes to make the game do the following things:
@@ -131,14 +129,14 @@ This defaults to `localhost`, but you can also make the game connect to remote i
 And optionally also:
 - Disable the game's certificate pinning for inspecting network traffic.
 
-### Set-up
+##### Set-up
 The included .sln or .csproj files should be openable with visual studio. Nothing special.
 
-## License
+##### License
 All code included in this project is licensed under the zlib license.
 A copy of the zlib license can be found in the LICENSE file
 
-# Credits
+##### Credits
 
 Coded for the most part by @grappigegovert, with contributions from:
  - @AnthonyFuller1
