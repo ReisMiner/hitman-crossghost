@@ -3,8 +3,9 @@ import dgram from 'node:dgram';
 import { randomBytes, randomInt } from 'node:crypto';
 import { fieldsDecode, fieldsEncode, Kind, packetDecode, packetEncode, ReplayWindow } from './protocol.mjs';
 
-const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const roomCode = () => Array.from({ length: 8 }, () => alphabet[randomInt(alphabet.length)]).join('');
+// Five digits keep codes easy to share. Joins are rate-limited per IP and a room
+// accepts one guest, so guessing is bounded; maxRooms stays far below 100000.
+const roomCode = () => String(randomInt(100000)).padStart(5, '0');
 export function createRoomService({ backendUrl = '', host = '127.0.0.1', udpPort = 30002,
     udpHost = host, advertisedUdpPort, maxRooms = 1000, leaseMs = 30000, maxAgeMs = 6 * 3600000, now = Date.now } = {}) {
     if (backendUrl) {
@@ -92,8 +93,8 @@ export function createRoomService({ backendUrl = '', host = '127.0.0.1', udpPort
                 reply(res, 201, credentials(room, room.host, 0)); return;
             }
             if (fields.Store !== 'epic' && fields.Store !== 'steam') { reply(res, 409, { Error: 'Unsupported guest storefront' }); return; }
-            const code = String(fields.RoomCode ?? '').toUpperCase().replace(/[-\s]/g, '');
-            const room = /^[A-Z2-9]{8}$/.test(code) ? codes.get(code) : null;
+            const code = String(fields.RoomCode ?? '').replace(/[-\s]/g, '');
+            const room = /^\d{5}$/.test(code) ? codes.get(code) : null;
             if (!room || !room.host.endpoint) { reply(res, 404, { Error: 'Room not found or host is not connected' }); return; }
             if (room.guest) { reply(res, 409, { Error: 'Room is full' }); return; }
             room.guest = member();

@@ -49,7 +49,7 @@ test('real HTTP/UDP: room lifecycle, auth, channels, replay, rebinding and expir
     }
     const created = await post('create', { Store: 'epic' });
     assert.equal(created.status, 201);
-    assert.match(created.fields.RoomCode, /^[A-Z2-9]{8}$/);
+    assert.match(created.fields.RoomCode, /^\d{5}$/);
     assert.equal(created.fields.BackendUrl, 'https://backend.example');
     const h = created.fields;
     let hs = 0n, gs = 0n;
@@ -58,7 +58,7 @@ test('real HTTP/UDP: room lifecycle, auth, channels, replay, rebinding and expir
     assert.equal((await post('join', { Store: 'steam', RoomCode: h.RoomCode })).status, 404);
     host.send(pack(h, 0, Kind.hello, 0, ++hs), address.udpPort);
     assert.equal(unpack(await host.receive(), h).kind, Kind.ack);
-    const joined = await post('join', { Store: 'steam', RoomCode: h.RoomCode.toLowerCase() });
+    const joined = await post('join', { Store: 'steam', RoomCode: ` ${h.RoomCode.slice(0, 2)}-${h.RoomCode.slice(2)}` });
     assert.equal(joined.status, 200); const g = joined.fields;
     assert.equal((await post('join', { Store: 'steam', RoomCode: h.RoomCode })).status, 409);
     guest.send(pack(g, 1, Kind.hello, 0, ++gs), address.udpPort);
