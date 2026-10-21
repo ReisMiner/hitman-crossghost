@@ -84,14 +84,14 @@ export function createRoomService({ backendUrl = '', host = '127.0.0.1', udpPort
                 reply(res, 409, { Error: 'Incompatible client protocol or game build' }); return;
             }
             if (req.url === '/v1/rooms/create') {
-                if (fields.Store !== 'epic') { reply(res, 409, { Error: 'Hosting currently requires Epic' }); return; }
+                if (fields.Store !== 'epic' && fields.Store !== 'steam') { reply(res, 409, { Error: 'Unsupported host storefront' }); return; }
                 if (rooms.size >= maxRooms) { reply(res, 503, { Error: 'Service is full' }); return; }
                 let code; do { code = roomCode(); } while (codes.has(code));
                 const room = { id: randomBytes(16).toString('hex'), code, host: member(), guest: null, created: now() };
                 rooms.set(room.id, room); codes.set(code, room);
                 reply(res, 201, credentials(room, room.host, 0)); return;
             }
-            if (fields.Store !== 'steam') { reply(res, 409, { Error: 'Joining currently requires Steam' }); return; }
+            if (fields.Store !== 'epic' && fields.Store !== 'steam') { reply(res, 409, { Error: 'Unsupported guest storefront' }); return; }
             const code = String(fields.RoomCode ?? '').toUpperCase().replace(/[-\s]/g, '');
             const room = /^[A-Z2-9]{8}$/.test(code) ? codes.get(code) : null;
             if (!room || !room.host.endpoint) { reply(res, 404, { Error: 'Room not found or host is not connected' }); return; }

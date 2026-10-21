@@ -12,6 +12,7 @@ The setup process for players is super simple. You'll need the requirements down
 - [Simple Mod Framework (SMF)](https://github.com/atampy25/simple-mod-framework) installed
 - CrossGhost mod downloaded
 - [Ghost Mode Assets Mod](https://www.nexusmods.com/hitman3/mods/260) installed (made by MrMike)
+- Local Ghost Patcher from this repo
 
 The install instructions for each of those is best found on their respective GitHub/Nexus Mods pages.
 

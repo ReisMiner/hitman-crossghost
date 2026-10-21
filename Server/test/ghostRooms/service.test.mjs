@@ -94,6 +94,11 @@ test('real HTTP/UDP: room lifecycle, auth, channels, replay, rebinding and expir
     now += 31000; service.sweep();
     assert.equal(unpack(await host.receive(), h).kind, Kind.gone);
     assert.equal((await post('join', { Store: 'steam', RoomCode: h.RoomCode })).status, 404);
-    assert.equal((await post('create', { Store: 'steam' })).status, 409);
+    const reverse = await post('create', { Store: 'steam' });
+    assert.equal(reverse.status, 201);
+    const rh = reverse.fields;
+    host.send(pack(rh, 0, Kind.hello, 0, ++hs), address.udpPort);
+    assert.equal(unpack(await host.receive(), rh).kind, Kind.ack);
+    assert.equal((await post('join', { Store: 'epic', RoomCode: rh.RoomCode })).status, 200);
     assert.equal((await post('create', { Store: 'epic', Protocol: '99' })).status, 409);
 });
