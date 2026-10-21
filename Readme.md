@@ -11,7 +11,7 @@ in **one container**, using **https://hitmanghost.ramon.cc** for both.
 docker compose up -d --build
 ```
 
-Connect your existing HTTPS proxy to **TCP 8080** and allow **UDP 30002** on the
+Connect your existing HTTPS proxy to **TCP 47047** and allow **UDP 30002** on the
 VPS. Profiles persist in a named volume. See [deployment and player flow](docs/ghost-crossplay.md).
 
 The GhostCrossplay DLL uses **Host → room code → Join** and configures the backend

@@ -13,7 +13,7 @@ docker compose up -d --build
 
 The defaults are ready for **https://hitmanghost.ramon.cc**:
 
-- **TCP 8080:** the single HTTP upstream for your existing HTTPS proxy. Forward
+- **TCP 47047:** the single HTTP upstream for your existing HTTPS proxy. Forward
   the whole domain here, preserving request paths.
 - **UDP 30002:** game relay. Publish/allow this port directly on the VPS.
 
@@ -39,7 +39,7 @@ Defaults require no `.env` file. Compose accepts these overrides if needed:
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `PUBLIC_ORIGIN` | `https://hitmanghost.ramon.cc` | Shared public origin, without a path |
-| `HTTP_PORT` | `8080` | Published HTTP upstream port |
+| `HTTP_PORT` | `47047` | Published HTTP upstream port |
 | `RELAY_PORT` | `30002` | Published and advertised UDP relay port |
 | `TRUST_PROXY` | `single` | One trusted proxy hop for per-client rate limits; `loopback` and `none` also work |
 
@@ -92,8 +92,8 @@ npm ci --omit=dev --ignore-scripts
 npm test
 ```
 
-For a direct local development run, set `PUBLIC_ORIGIN=http://127.0.0.1:8080`,
-`PORT=8080`, then run `npm start` from `Server/`. The native development DLL must
+For a direct local development run, set `PUBLIC_ORIGIN=http://127.0.0.1:47047`,
+`PORT=47047`, then run `npm start` from `Server/`. The native development DLL must
 use that same origin.
 
 Current validation: Compose configuration and all four backend/room integration

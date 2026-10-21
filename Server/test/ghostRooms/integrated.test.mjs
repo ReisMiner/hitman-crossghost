@@ -68,7 +68,7 @@ test('one LocalGhost listener serves game config/auth and room-code UDP transpor
     // A proxy's internal Host or scheme must not leak into public game URLs.
     const config = await new Promise((resolve, reject) => {
         const req = http.get(origin + '/config/pc-prod/8_2_0', {
-            headers: { Host: 'internal-upstream:8080', 'X-Forwarded-Proto': 'http', 'X-Forwarded-Host': 'wrong.example' },
+            headers: { Host: 'internal-upstream:47047', 'X-Forwarded-Proto': 'http', 'X-Forwarded-Host': 'wrong.example' },
         }, res => {
             let body = ''; res.on('data', bytes => { body += bytes; });
             res.on('end', () => {
