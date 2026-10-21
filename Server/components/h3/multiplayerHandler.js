@@ -34,6 +34,7 @@ app.post('/GetRequiredResourcesForPreset', express.json(), async (req, res) => {
 let activeMatches = new Map();
 
 app.post('/RegisterToMatch', express.json(), async (req, res) => {
+    console.log('RegisterToMatch request', JSON.stringify(req.body));
     // get a random contract from the list of possible ones in the selected preset
     let multiplayerPresets = JSON.parse(await readFile(path.join('menudata', 'h3', 'menudata', 'multiplayerpresets.json')));
     if (!req.body.presetId) {
@@ -86,9 +87,11 @@ app.post('/RegisterToMatch', express.json(), async (req, res) => {
         MatchStats: {},
         MatchType: 0
     });
+    console.log('RegisterToMatch response', JSON.stringify({ matchId: req.body.matchId, players: activeMatches.get(req.body.matchId)?.Players }));
 });
 
 app.post('/SetMatchData', express.json(), (req, res) => {
+    console.log('SetMatchData request', JSON.stringify(req.body));
     let match = activeMatches.get(req.body.matchId)
     if (match && match.Players.includes(req.jwt.unique_name)) {
         match.MatchData[req.body.key] = req.body.value;
@@ -106,7 +109,16 @@ app.post('/SetMatchData', express.json(), (req, res) => {
     }
 });
 
+app.get('/DebugMatches', (req, res) => {
+    res.json([...activeMatches.entries()].map(([id, match]) => ({
+        matchId: id,
+        players: match.Players,
+        matchData: match.MatchData,
+    })));
+});
+
 app.post('/RegisterToPreset', express.json(), (req, res) => { // matchmaking
+    console.log('RegisterToPreset request', JSON.stringify(req.body));
     // TODO: implement matchmaking
     // req.body.presetId
     // req.body.lobbyId (this is just a timestamp?)

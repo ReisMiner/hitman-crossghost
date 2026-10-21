@@ -1,0 +1,34 @@
+name: localghost
+
+services:
+  localghost:
+    build: .
+    restart: unless-stopped
+    init: true
+    environment:
+      PUBLIC_ORIGIN: "${PUBLIC_ORIGIN:-https://hitmanghost.ramon.cc}"
+      PORT: "8080"
+      BIND_HOST: 0.0.0.0
+      UDP_HOST: 0.0.0.0
+      UDP_PORT: "30002"
+      PUBLIC_UDP_PORT: "${RELAY_PORT:-30002}"
+      TRUST_PROXY: "${TRUST_PROXY:-single}"
+    ports:
+      - "${HTTP_PORT:-8080}:8080/tcp"
+      - "${RELAY_PORT:-30002}:30002/udp"
+    volumes:
+      - userdata:/app/userdata
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  userdata:

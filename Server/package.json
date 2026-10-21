@@ -2,7 +2,8 @@
   "name": "hitmanserb",
   "version": "",
   "scripts": {
-    "start": "node serb.js"
+    "start": "node serb.js",
+    "test": "node --test test/ghostRooms/*.test.mjs"
   },
   "dependencies": {
     "atomically": "^1.7.0",

@@ -14,8 +14,19 @@ const h2router = require('./components/h2router.js');
 const h3router = require('./components/h3router.js');
 
 let app = express();
+const publicUrl = new URL(process.env.PUBLIC_ORIGIN || 'https://hitmanghost.ramon.cc');
+if (!['https:', 'http:'].includes(publicUrl.protocol) || publicUrl.username || publicUrl.password ||
+    publicUrl.pathname !== '/' || publicUrl.search || publicUrl.hash) {
+    throw new Error('PUBLIC_ORIGIN must be an HTTP(S) origin without a path');
+}
+const publicOrigin = publicUrl.origin;
+let roomService;
 
 app.disable('x-powered-by');
+// Optional trusted proxy policy for client addresses. Published game and room
+// URLs always use PUBLIC_ORIGIN, regardless of the proxy's Host/scheme headers.
+if (process.env.TRUST_PROXY === 'loopback') app.set('trust proxy', 'loopback');
+if (process.env.TRUST_PROXY === 'single') app.set('trust proxy', 1);
 
 app.use((req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
@@ -24,11 +35,18 @@ app.use((req, res, next) => {
     next();
 });
 
+// Room credentials use their own protocol. Mount before the game's body parsers
+// and platform-token middleware so both APIs share this one HTTP listener.
+app.use((req, res, next) => {
+    if (req.path === '/healthz' || req.path === '/v1/config' ||
+        req.path === '/v1/rooms' || req.path.startsWith('/v1/rooms/')) {
+        roomService.handleRequest(req, res).catch(next);
+    } else next();
+});
+
 app.get('/config/:configName/:serverVersion(\\d+_\\d+_\\d+)', (req, res) => {
     readFile('static/config.json').then((configfile) => {
         let config = JSON.parse(configfile);
-        let serverhost = req.get('Host');
-        let protocol = req.protocol;
         if (req.params.serverVersion.startsWith('6')) {
             config.Versions[0].GAME_VER = "6.74.0";
         } else if (req.params.serverVersion.startsWith('8')) {
@@ -36,12 +54,12 @@ app.get('/config/:configName/:serverVersion(\\d+_\\d+_\\d+)', (req, res) => {
         }
         config.Versions[0].Name = req.params.configName;
         config.Versions[0].ISSUER_ID = req.query.issuer || '*';
-        config.Versions[0].SERVER_VER.Metrics.MetricsServerHost = `${protocol}://${serverhost}`;
-        config.Versions[0].SERVER_VER.Authentication.AuthenticationHost = `${protocol}://${serverhost}`;
-        config.Versions[0].SERVER_VER.Configuration.Url = `${protocol}://${serverhost}/files/onlineconfig.json`;
-        config.Versions[0].SERVER_VER.Configuration.AgreementUrl = `${protocol}://${serverhost}/files/privacypolicy/hm2/privacypolicy.json`;
-        config.Versions[0].SERVER_VER.Resources.ResourcesServicePath = `${protocol}://${serverhost}/files`;
-        config.Versions[0].SERVER_VER.GlobalAuthentication.AuthenticationHost = `${protocol}://${serverhost}`;
+        config.Versions[0].SERVER_VER.Metrics.MetricsServerHost = publicOrigin;
+        config.Versions[0].SERVER_VER.Authentication.AuthenticationHost = publicOrigin;
+        config.Versions[0].SERVER_VER.Configuration.Url = `${publicOrigin}/files/onlineconfig.json`;
+        config.Versions[0].SERVER_VER.Configuration.AgreementUrl = `${publicOrigin}/files/privacypolicy/hm2/privacypolicy.json`;
+        config.Versions[0].SERVER_VER.Resources.ResourcesServicePath = `${publicOrigin}/files`;
+        config.Versions[0].SERVER_VER.GlobalAuthentication.AuthenticationHost = publicOrigin;
         config.Versions[0].SERVER_VER.GlobalAuthentication.RequestedAudience = `pc-prod_${req.params.serverVersion.slice(0, 1)}`;
         res.json(config);
     });
@@ -283,7 +301,7 @@ app.use(express.Router().use('/resources-:serverVersion(\\d+-\\d+)/', (req, res,
 
 function generateBlobConfig(req) {
     return {
-        bloburl: `${req.protocol}://${req.get('Host')}/resources-${req.serverVersion}/`,
+        bloburl: `${publicOrigin}/resources-${req.serverVersion}/`,
         blobsig: '?sv=2018-03-28',
         blobsigduration: 7200000.0
     };
@@ -349,5 +367,37 @@ setInterval(function () {
 
 const httpServer = http.createServer(app);
 
-httpServer.listen(process.env.PORT || 80);
-console.log('Server started.');
+httpServer.requestTimeout = 30000;
+httpServer.headersTimeout = 10000;
+
+async function start() {
+    const { createRoomService } = await import('./components/ghostRooms/service.mjs');
+    roomService = createRoomService({
+        backendUrl: publicOrigin,
+        udpHost: process.env.UDP_HOST || '0.0.0.0',
+        udpPort: Number(process.env.UDP_PORT ?? 30002),
+        advertisedUdpPort: process.env.PUBLIC_UDP_PORT ? Number(process.env.PUBLIC_UDP_PORT) : undefined,
+    });
+    try {
+        const relay = await roomService.listen();
+        await new Promise((resolve, reject) => {
+            httpServer.once('error', reject);
+            httpServer.listen(Number(process.env.PORT ?? 80), process.env.BIND_HOST || '0.0.0.0', resolve);
+        });
+        console.log(JSON.stringify({ event: 'localghost-ready', httpPort: httpServer.address().port,
+            udpPort: relay.udpPort, publicOrigin }));
+    } catch (error) {
+        await roomService.close();
+        throw error;
+    }
+}
+
+let stopping = false;
+for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, async () => {
+    if (stopping) return;
+    stopping = true;
+    const deadline = setTimeout(() => process.exit(0), 5000); deadline.unref();
+    await Promise.all([new Promise(resolve => httpServer.close(resolve)), roomService?.close()]);
+    clearTimeout(deadline);
+});
+start().catch(error => { console.error('LocalGhost startup failed:', error.message); process.exit(1); });

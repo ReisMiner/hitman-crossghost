@@ -1,4 +1,24 @@
-# LocalGhost
+# CrossGhost
+
+Detached fork is based on grappigegovert's [LocalGhost](https://gitlab.com/grappigegovert/localghost).
+
+## LocalGhost Crossplay fork
+
+This fork integrates the room-code API and UDP relay with the existing backend
+in **one container**, using **https://hitmanghost.ramon.cc** for both.
+
+```sh
+docker compose up -d --build
+```
+
+Connect your existing HTTPS proxy to **TCP 8080** and allow **UDP 30002** on the
+VPS. Profiles persist in a named volume. See [deployment and player flow](docs/ghost-crossplay.md).
+
+The GhostCrossplay DLL uses **Host → room code → Join** and configures the backend
+itself. The original project's patcher instructions below apply to legacy clients.
+
+## Original project
+
 This started off as a barebones server replacement for ghost mode only, but it has grown a bit since.
 
 This project consists of two parts: a patcher, and a server.
@@ -44,11 +64,14 @@ Happy ghosting!
 
 # Server hosters
 
-To run a server, NodeJS version 12 or higher is needed.
+For this fork, use NodeJS 22 or the container described above.
 
 First, you have to install all dependencies by running `npm install`. This is only needed once (or after some updates).
 You can now start the server by running `node serb.js` or `npm start`.
 It is possible to run the server on a different port than port 80 by setting the `PORT` environment variable.
+Set `PUBLIC_ORIGIN` to the externally reachable origin when running outside the
+default deployment; it defaults to `https://hitmanghost.ramon.cc`. The integrated
+relay also listens on UDP 30002.
 
 ### Custom tiles
 In the menudata folder, there are two json files, `serverTile.template.json` and `featuredContracts.template.json`. These can be copied to `serverTile.json` and `featuredContracts.json` respectively and edited to suit your needs.
@@ -58,6 +81,15 @@ Each gameversion (h1, h2, or h3) uses its own version of the `featuredContracts.
 
 
 # Developers
+
+## Experimental store-independent lobby backend
+
+This workspace adds a separate host/join-code API for future Steam/Epic native
+clients. It handles two-player rooms, compatibility, readiness and disconnects;
+it does **not** connect the stock game, fix Epic lobby creation or implement
+gameplay crossplay. See [the v1 API and native-client boundary](docs/ghost-lobby-v1.md).
+Use Node 22 and loopback-only testing: the legacy authentication is not safe for
+public hosting. Existing game-facing multiplayer endpoints remain unchanged.
 
 ## Server
 
@@ -70,7 +102,7 @@ Most parts of the server are split up into three versions: h1, h2, and h3; corre
 When a request comes in, the request is assigned a req.gameVersion according to its steam/epic token appid, and routed to the version specific parts of the server, falling back to newer game versions if a request isn't handled by the version specific part.
 This means that most of the code is in the h3 subdirectories, with only some version-specific bits in the h1/h2 folders.
 
-To run the server, you need NodeJS installed. (v12 or up)
+To run this fork directly, use NodeJS 22.
 
 ### Set-up
 To install all the dependencies, run `npm install`. Now you can run `node serb.js` to start the server.

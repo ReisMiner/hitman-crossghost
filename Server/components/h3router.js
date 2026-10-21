@@ -9,8 +9,11 @@ const menuData = require('./h3/menuData.js');
 const eventHandler = require('./h3/eventHandler.js');
 const multiplayerHandler = require('./h3/multiplayerHandler.js');
 const contractHandler = require('./h3/contractHandler.js');
+const ghostLobbyHandler = require('./h3/ghostLobbyHandler.js');
 
 const router = express.Router();
+
+router.use('/authentication/api/userchannel/GhostLobbyService/', ghostLobbyHandler.router);
 
 router.use('/authentication/api/userchannel/MultiplayerService/', multiplayerHandler);
 
@@ -26,6 +29,7 @@ router.use('/resources-(\\d+-\\d+)/', menuSystem);
 
 function sessionCleanup() {
     eventHandler.cleanupOldSessions();
+    ghostLobbyHandler.cleanup();
 }
 
 router.sessionCleanup = sessionCleanup;

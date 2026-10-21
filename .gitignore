@@ -33,3 +33,8 @@ Server/menudata/*/featuredContracts.json
 Server/menudata/*/dynamic_resources_pc_release_rpkg.rpkg
 
 .idea/
+
+# Optional deployment overrides and backups
+.env
+.env.*
+userdata-backup*.tar.gz

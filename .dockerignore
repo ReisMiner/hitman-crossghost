@@ -1,0 +1,19 @@
+# The fork builds entirely from its own Server directory.
+**
+!Server/
+!Server/**
+Server/node_modules/
+Server/test/
+**/.git/
+**/.env
+**/.env.*
+**/*.log
+
+# Include templates and the reference profile, not local player data.
+Server/userdata/*/users/*
+!Server/userdata/*/users/fadb923c-e6bb-4283-a537-eb4d1150262e.json
+Server/userdata/*/*ids/*
+!Server/userdata/*/*ids/.gitkeep
+Server/contractdata/*
+!Server/contractdata/c854d9c7-8991-42db-a2e4-3cf93e645e81.json
+!Server/contractdata/d5ad70f4-7dbb-4b2b-b183-061778a51468.json
