@@ -23,9 +23,10 @@ Server/userdata/*/*ids/**
 
 # no contract data
 Server/contractdata/**
-# except for the two ghost mode contracts
+# except for the supported ghost mode contracts
 !Server/contractdata/c854d9c7-8991-42db-a2e4-3cf93e645e81.json
 !Server/contractdata/d5ad70f4-7dbb-4b2b-b183-061778a51468.json
+!Server/contractdata/8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89.json
 
 # no custom server data
 Server/menudata/*/serverTile.json

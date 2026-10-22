@@ -66,11 +66,38 @@ docker compose start localghost
 
 ## Player flow
 
-With the GhostCrossplay DLL and Ghost Mode assets installed, the Epic player
-selects a map/lobby and presses **Host**. They share the eight-character room code.
-The Steam player enters that code and presses **Join**. The DLL configures the
-game backend automatically. Epic hosting/Steam joining is the implemented store
-direction; reverse-store hosting remains separate work.
+With the GhostCrossplay DLL and Ghost Mode assets installed, either storefront
+selects a map/lobby and presses **Host**. They share the five-digit room code.
+The other player enters that code and presses **Join**. The DLL configures the
+game backend automatically. Both Epic-host/Steam-guest and Steam-host/Epic-guest
+are supported.
+
+### Hawke's Bay
+
+The H3 menu includes Miami, Santa Fortuna and Hawke's Bay, including the Random
+Map pool. Hawke's Bay uses the Ghost Mode mod's daytime **Anubis** mission, not
+the Nightcall story contract. Both PCs need Ghost Mode assets **2.1.0 or newer**
+(2.3.0 recommended), which include the Hawke's Bay entities.
+
+After updating the server sources, run `docker compose up -d --build` and restart
+both games to refresh the map menu. Install the updated universal DLL on both
+PCs; the Epic guest needs its new Hawke's Bay preset-to-contract fallback.
+There are no additional containers, ports or player settings.
+
+Definitions:
+
+- `Server/contractdata/8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89.json`: the Anubis
+  scene, Ghost Mode bricks, objective and scoring. It uses the same objective
+  state machine as the existing Ghost Mode contracts. The mission ID and asset
+  list were checked against Peacock's `contractdata/GHOST/ANUBIS.json` and the
+  HITMAPS Ghost Mode mod's `manifest.json`.
+- `Server/menudata/h3/menudata/multiplayerpresets.json`: the dedicated Hawke's
+  Bay invite preset (ID equal to its contract ID) and the all-map pools.
+- The earlier experimental `GhostLobbyService` map list is not used by the DLL;
+  the native game gets its maps through `/multiplayerpresets`.
+
+Automated tests cover menu data, required resources and match registration in
+both store directions. Two-PC gameplay still needs a manual test.
 
 ## Implementation and tests
 

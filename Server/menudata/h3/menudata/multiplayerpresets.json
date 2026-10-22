@@ -11,7 +11,8 @@
     "Data": {
       "Contracts": [
         "c854d9c7-8991-42db-a2e4-3cf93e645e81",
-        "d5ad70f4-7dbb-4b2b-b183-061778a51468"
+        "d5ad70f4-7dbb-4b2b-b183-061778a51468",
+        "8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89"
       ],
       "Properties": {
         "mode": "invite",
@@ -32,7 +33,8 @@
     "Data": {
       "Contracts": [
         "c854d9c7-8991-42db-a2e4-3cf93e645e81",
-        "d5ad70f4-7dbb-4b2b-b183-061778a51468"
+        "d5ad70f4-7dbb-4b2b-b183-061778a51468",
+        "8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89"
       ],
       "Properties": {
         "mode": "matchmaking",
@@ -71,6 +73,25 @@
     "Data": {
       "Contracts": [
         "d5ad70f4-7dbb-4b2b-b183-061778a51468"
+      ],
+      "Properties": {
+        "mode": "invite",
+        "active": true,
+        "__comment": "mode can be: matchmaking/invite/all"
+      }
+    }
+  },
+  {
+    "Id": "8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89",
+    "GameMode": "versus",
+    "Metadata": {
+      "Title": "UI_LOCATION_NEWZEALAND_CITY",
+      "Header": "UI_MENU_LOBBY_INVITEPLAYER",
+      "Image": "images/locations/LOCATION_NEWZEALAND/tile.jpg"
+    },
+    "Data": {
+      "Contracts": [
+        "8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89"
       ],
       "Properties": {
         "mode": "invite",
