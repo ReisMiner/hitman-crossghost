@@ -12,16 +12,19 @@ import multiplayer from '../../components/h3/multiplayerHandler.js';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const hawkesBay = '8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89';
 const haven = '5e895adf-9879-44d9-b43f-13bb24e897bc';
+const paris = '59d1caab-2056-4f4b-a921-9958ef0a88eb';
 const addedMaps = [
     { id: hawkesBay, title: 'UI_LOCATION_NEWZEALAND_CITY', location: 'LOCATION_NEWZEALAND',
         resources: 9, targetBrick: 'assembly:/_pro/scenes/missions/sheep/versus_targets_newzealand.brick' },
     { id: haven, title: 'UI_LOCATION_OPULENT_CITY', location: 'LOCATION_OPULENT_STINGRAY',
         resources: 6, targetBrick: 'assembly:/_pro/scenes/missions/opulent/mission_stingray/versus_targets_opulent_stingray.brick' },
+    { id: paris, title: 'UI_LOCATION_PARIS_CITY', location: 'LOCATION_PARIS',
+        resources: 6, targetBrick: 'assembly:/_pro/scenes/missions/paris/versus_targets_paris.brick' },
 ];
 const presetPath = 'menudata/h3/menudata/multiplayerpresets.json';
 const json = async relative => JSON.parse(await readFile(path.join(root, relative), 'utf8'));
 
-test('H3 presets reference complete Ghost Mode contracts, including Hawke\'s Bay and Haven', async () => {
+test('H3 presets reference complete Ghost Mode contracts, including Hawke\'s Bay, Haven and Paris', async () => {
     const presets = await json(presetPath);
     assert.equal(new Set(presets.map(p => p.Id)).size, presets.length, 'unique preset IDs');
     for (const preset of presets) {
@@ -82,6 +85,24 @@ test('Haven uses the base Stingray scene and only the merged Ghost Mode bricks',
     assert.ok(!contract.Data.VR, 'do not inherit another location\'s VR bricks');
     const original = await json(`contractdata/${hawkesBay}.json`);
     assert.deepEqual(contract.Data.Objectives[0].Definition, original.Data.Objectives[0].Definition);
+});
+
+test('Paris uses the native Showstopper scene and first-party Ghost Mode bricks', async () => {
+    const contract = await json(`contractdata/${paris}.json`);
+    assert.equal(contract.Metadata.Location, 'LOCATION_PARIS');
+    assert.deepEqual(contract.Metadata.Entitlements, ['LOCATION_PARIS']);
+    assert.equal(contract.Metadata.ScenePath, 'assembly:/_pro/scenes/missions/paris/_scene_paris.entity');
+    assert.equal(contract.Metadata.EndConditions.PointLimit, 5);
+    assert.deepEqual(contract.Data.Bricks, [
+        'assembly:/_pro/scenes/missions/paris/versus_targets_paris.brick',
+        'assembly:/_pro/scenes/missions/paris/versus_items_paris.brick',
+        'assembly:/_pro/scenes/missions/paris/versus_entrance_paris.brick',
+        'assembly:/_PRO/Scenes/bricks/ui_versus.brick',
+        'assembly:/_pro/scenes/bricks/vs_race_multiplayer.brick',
+    ]);
+    const original = await json(`contractdata/${hawkesBay}.json`);
+    assert.deepEqual(contract.Data.Objectives[0].Definition, original.Data.Objectives[0].Definition,
+        'Paris uses the same versus target-picking objective');
 });
 
 test('both storefronts receive the added maps in menu/resources and join the same match', async t => {

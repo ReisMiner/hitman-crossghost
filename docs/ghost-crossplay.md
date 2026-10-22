@@ -74,7 +74,7 @@ are supported.
 
 ### Hawke's Bay
 
-The H3 menu includes Miami, Santa Fortuna, Hawke's Bay and Haven Island,
+The H3 menu includes Miami, Santa Fortuna, Hawke's Bay, Haven Island and Paris,
 including the Random Map pool. Hawke's Bay uses the Ghost Mode mod's daytime **Anubis** mission, not
 the Nightcall story contract. Both PCs need Ghost Mode assets **2.1.0 or newer**
 (2.3.0 recommended), which include the Hawke's Bay entities.
@@ -126,6 +126,30 @@ follows Hawke's Bay; Haven is also included in the Random Map pool.
 The original Haven assets were advertised for Steam only. Offline tests cover
 the merged package and both server-side host directions, but manual SMF
 deployment and two-PC gameplay are still required to validate Steam/Epic Haven.
+
+### Paris
+
+Paris is included in the same **2.5.0** mod package, so there is still only one
+SMF mod to install. Deploy the updated package and the updated server, then
+install the updated universal DLL on both PCs and restart both games. Paris
+appears in **Invite Player** after Haven and is part of Random Map.
+
+- Contract and dedicated preset: `59d1caab-2056-4f4b-a921-9958ef0a88eb`.
+- Scene: `assembly:/_pro/scenes/missions/paris/_scene_paris.entity`.
+- Location: `LOCATION_PARIS`; entitlement: `LOCATION_PARIS`.
+- Bricks: `versus_targets_paris`, `versus_items_paris`,
+  `versus_entrance_paris`, plus shared `ui_versus` and `vs_race_multiplayer`.
+- The asset mod adds 18 paired starts in nine areas, six Ghost item crates and
+  12 new target NPCs placed at native Showstopper positions. The story targets
+  and native scene are left intact.
+- The target picker is the same H3 versus composite used by Hawke's Bay. Its
+  target list, roles and drama situations are authored in the Paris targets
+  brick; the existing `vs_race_multiplayer` rules provide selection/scoring.
+
+Automated tests validate the three brick documents, every local entity
+reference, resource registrations, server menu/resource responses and both
+host directions. Actual SMF deployment, spawn points, target reachability and
+cross-store gameplay still need a manual two-PC test.
 
 ## Implementation and tests
 

@@ -1,0 +1,145 @@
+{
+  "Data": {
+    "Objectives": [
+      {
+        "Id": "b6c7a2d1-7cf6-4a05-8ef3-92ff7ce65f71",
+        "ObjectiveType": "custom",
+        "OnActive": { "IfCompleted": { "Visible": false } },
+        "Image": "images/contracts/AssRace/AssRaceTarget.jpg",
+        "BriefingName": "$loc UI_CONTRACT_VS_RACE_TARGETS_OBJ_NAME",
+        "BriefingText": "$loc UI_CONTRACT_VS_RACE_TARGETS_OBJ_DESC",
+        "Category": "primary",
+        "HUDTemplate": { "display": "$loc UI_CONTRACT_VS_RACE_TARGETS_OBJ" },
+        "Type": "statemachine",
+        "Definition": {
+          "ContextListeners": {
+            "CooldownActive": {
+              "type": "custom",
+              "HUDTemplate": {
+                "display": {
+                  "$loc": { "key": "UI_CONTRACT_VS_RACE_TARGET_INCOMING_OBJ", "data": [] }
+                }
+              }
+            }
+          },
+          "Context": {
+            "KilledActors": [],
+            "Targets": [],
+            "CooldownActive": 1,
+            "CooldownInActive": 1
+          },
+          "States": {
+            "Start": {
+              "TargetPickedConfirm": [
+                {
+                  "Actions": [
+                    { "$reset": "Targets" },
+                    { "$pushunique": ["Targets", "$Value.RepositoryId"] }
+                  ],
+                  "Transition": "TargetPicked"
+                }
+              ]
+            },
+            "TargetPicked": {
+              "TimerExpirationStart": [
+                { "Actions": { "$dec": "CooldownActive" }, "Transition": "CooldownRunning" }
+              ],
+              "TimerExpirationEnd": [
+                { "Actions": { "$dec": "CooldownActive" } }
+              ],
+              "TargetPickedConfirm": [
+                {
+                  "Actions": [
+                    { "$reset": "Targets" },
+                    { "$pushunique": ["Targets", "$Value.RepositoryId"] }
+                  ]
+                }
+              ]
+            },
+            "CooldownRunning": {
+              "$timer": [
+                {
+                  "Condition": { "$after": 20 },
+                  "Actions": { "$dec": "CooldownInActive" },
+                  "Transition": "TargetPicked"
+                }
+              ],
+              "TimerExpirationEnd": [
+                { "Actions": { "$dec": "CooldownInActive" } }
+              ],
+              "TargetPickedConfirm": [
+                {
+                  "Actions": [
+                    { "$reset": "Targets" },
+                    { "$pushunique": ["Targets", "$Value.RepositoryId"] }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "Bricks": [
+      "assembly:/_pro/scenes/missions/paris/versus_targets_paris.brick",
+      "assembly:/_pro/scenes/missions/paris/versus_items_paris.brick",
+      "assembly:/_pro/scenes/missions/paris/versus_entrance_paris.brick",
+      "assembly:/_PRO/Scenes/bricks/ui_versus.brick",
+      "assembly:/_pro/scenes/bricks/vs_race_multiplayer.brick"
+    ],
+    "Entrances": [],
+    "GameChangers": [],
+    "EngineModesBricks": [],
+    "EnableSaving": false
+  },
+  "Metadata": {
+    "CodeName_Hint": "Ghost Mode Paris - Showstopper map",
+    "CreationTimestamp": "2026-10-22T00:00:00Z",
+    "CreatorUserId": "fadb923c-e6bb-4283-a537-eb4d1150262e",
+    "TileImage": "images/contracts/assrace/tile.jpg",
+    "Title": "UI_CONTRACT_VS_RACE_NAME",
+    "Description": "UI_CONTRACT_VS_RACE_DESC",
+    "Id": "59d1caab-2056-4f4b-a921-9958ef0a88eb",
+    "IsPublished": true,
+    "IsVersus": true,
+    "LastUpdate": "2026-10-22T00:00:00Z",
+    "Location": "LOCATION_PARIS",
+    "Release": "1.0.x",
+    "SpawnSelectionType": "random",
+    "Gamemodes": ["versus"],
+    "Enginemodes": ["singleplayer", "multiplayer"],
+    "CharacterSetup": [
+      {
+        "Mode": "multiplayer",
+        "Characters": [
+          { "Name": "47", "Id": "44eba719-4d3a-4f27-9437-3f29821934b3" },
+          { "Name": "47", "Id": "44eba719-4d3a-4f27-9437-3f29821934b3" }
+        ]
+      }
+    ],
+    "Entitlements": ["LOCATION_PARIS"],
+    "ScenePath": "assembly:/_pro/scenes/missions/paris/_scene_paris.entity",
+    "Type": "vsrace",
+    "UserData": null,
+    "Scoring": {
+      "Kill": {
+        "UnnoticedTarget": 1,
+        "NoticedTarget": 0,
+        "NoticedNonTarget": -1,
+        "UnnoticedNonTarget": -1
+      },
+      "AccidentKill": 1,
+      "AsyncKill": {}
+    },
+    "EndConditions": { "PointLimit": 5 },
+    "TargetExpiration": 20,
+    "TargetExpirationReduced": 10,
+    "TargetLifeTime": 0,
+    "NonTargetKillPenaltyEnabled": false,
+    "NoticedTargetStreakPenaltyMax": 60,
+    "PublicId": "011173456789",
+    "IsFeatured": false,
+    "OpportunityData": []
+  },
+  "UserData": {}
+}
