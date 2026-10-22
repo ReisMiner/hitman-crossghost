@@ -10,7 +10,7 @@ To play ghost mode with crossplay enabled, you'll need the following requirement
 - [Simple Mod Framework](https://www.nexusmods.com/hitman3/mods/200)
 - [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK)
 - Modified Ghost Mode Assets Mod (see below)
-- GhostCrossplay.dll downloaded from the release page and copied into `<Hitman Install Folder>/Retail/mods/`
+- GhostCrossplay.dll downloaded from the [release page](https://git.ramon.cc/ramon/crossghost/releases/latest) and copied into `<Hitman Install Folder>/Retail/mods/`
 - LocalGhost Patcher is **NOT NEEDED!**
 
 ### How to modify the Ghost Mode Assets Mod

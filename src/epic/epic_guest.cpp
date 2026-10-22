@@ -2,6 +2,7 @@
 
 #include "common/native_lobby.h"
 #include "epic/epic_offsets.h"
+#include "game_maps.h"
 
 namespace ghost::epic {
 namespace {
@@ -11,17 +12,6 @@ constexpr size_t kLobbyDataProvidersOffset = 0x170;
 
 // Network state value the game writes when leaving a lobby (ZLobbyConnected::OnExit).
 constexpr int kNetworkStateDisconnect = 7;
-
-// Steam hosts may only publish a preset. The Epic join routine resolves the map
-// through ContractId, so fill it in for the two supported Ghost Mode presets.
-void FillContractFromPreset(metadata::Fields& fields) {
-    if (!fields["ContractId"].empty()) return;
-    const std::string& preset = fields["PresetId"];
-    if (preset == "d72d7cc9-ee26-4c7d-857a-75abdc9ccb61")
-        fields["ContractId"] = "c854d9c7-8991-42db-a2e4-3cf93e645e81";
-    else if (preset == "d5ad70f4-7dbb-4b2b-b183-061778a51468")
-        fields["ContractId"] = "d5ad70f4-7dbb-4b2b-b183-061778a51468";
-}
 
 } // namespace
 

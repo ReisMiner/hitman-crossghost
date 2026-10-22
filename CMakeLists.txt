@@ -73,6 +73,10 @@ include(CTest)
 if(BUILD_TESTING)
     ghost_add_net_library(GhostNetTesting)
 
+    add_executable(GhostMapTests tests/game_maps_test.cpp)
+    target_include_directories(GhostMapTests PRIVATE src)
+    add_test(NAME game-maps COMMAND GhostMapTests)
+
     add_executable(GhostRelayTests tests/relay_metadata_test.cpp)
     target_link_libraries(GhostRelayTests PRIVATE GhostNetTesting)
     add_test(NAME relay-metadata COMMAND GhostRelayTests)
