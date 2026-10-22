@@ -11,10 +11,17 @@ import multiplayer from '../../components/h3/multiplayerHandler.js';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const hawkesBay = '8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89';
+const haven = '5e895adf-9879-44d9-b43f-13bb24e897bc';
+const addedMaps = [
+    { id: hawkesBay, title: 'UI_LOCATION_NEWZEALAND_CITY', location: 'LOCATION_NEWZEALAND',
+        resources: 9, targetBrick: 'assembly:/_pro/scenes/missions/sheep/versus_targets_newzealand.brick' },
+    { id: haven, title: 'UI_LOCATION_OPULENT_CITY', location: 'LOCATION_OPULENT_STINGRAY',
+        resources: 6, targetBrick: 'assembly:/_pro/scenes/missions/opulent/mission_stingray/versus_targets_opulent_stingray.brick' },
+];
 const presetPath = 'menudata/h3/menudata/multiplayerpresets.json';
 const json = async relative => JSON.parse(await readFile(path.join(root, relative), 'utf8'));
 
-test('H3 presets reference complete Ghost Mode contracts, including Hawke\'s Bay', async () => {
+test('H3 presets reference complete Ghost Mode contracts, including Hawke\'s Bay and Haven', async () => {
     const presets = await json(presetPath);
     assert.equal(new Set(presets.map(p => p.Id)).size, presets.length, 'unique preset IDs');
     for (const preset of presets) {
@@ -27,12 +34,14 @@ test('H3 presets reference complete Ghost Mode contracts, including Hawke\'s Bay
             assert.equal(contract.Metadata.CharacterSetup[0].Characters.length, 2);
         }
     }
-    const dedicated = presets.find(p => p.Id === hawkesBay);
-    assert.equal(dedicated.Metadata.Title, 'UI_LOCATION_NEWZEALAND_CITY');
-    assert.equal(dedicated.Data.Properties.mode, 'invite');
-    assert.deepEqual(dedicated.Data.Contracts, [hawkesBay]);
-    for (const preset of presets.filter(p => p.Metadata.IsDefault)) {
-        assert.ok(preset.Data.Contracts.includes(hawkesBay), 'all-map pools include Hawke\'s Bay');
+    for (const map of addedMaps) {
+        const dedicated = presets.find(p => p.Id === map.id);
+        assert.equal(dedicated.Metadata.Title, map.title);
+        assert.equal(dedicated.Data.Properties.mode, 'invite');
+        assert.deepEqual(dedicated.Data.Contracts, [map.id]);
+        for (const preset of presets.filter(p => p.Metadata.IsDefault)) {
+            assert.ok(preset.Data.Contracts.includes(map.id), `all-map pools include ${map.title}`);
+        }
     }
 
     const contract = await json(`contractdata/${hawkesBay}.json`);
@@ -49,12 +58,33 @@ test('H3 presets reference complete Ghost Mode contracts, including Hawke\'s Bay
     // Without these exceptions a local test passes but the VPS loses the map.
     for (const ignoreFile of ['.gitignore', '.dockerignore']) {
         const rules = await readFile(path.join(root, '..', ignoreFile), 'utf8');
-        assert.ok(rules.split(/\r?\n/).includes(`!Server/contractdata/${hawkesBay}.json`),
-            `${ignoreFile} must include the shipped Hawke's Bay contract`);
+        for (const map of addedMaps) {
+            assert.ok(rules.split(/\r?\n/).includes(`!Server/contractdata/${map.id}.json`),
+                `${ignoreFile} must include the shipped ${map.title} contract`);
+        }
     }
 });
 
-test('both storefronts receive Hawke\'s Bay in menu/resources and join the same match', async t => {
+test('Haven uses the base Stingray scene and only the merged Ghost Mode bricks', async () => {
+    const contract = await json(`contractdata/${haven}.json`);
+    assert.equal(contract.Metadata.Location, 'LOCATION_OPULENT_STINGRAY');
+    assert.deepEqual(contract.Metadata.Entitlements, ['LOCATION_OPULENT']);
+    assert.equal(contract.Metadata.ScenePath,
+        'assembly:/_pro/scenes/missions/opulent/mission_stingray/scene_stingray_basic.entity');
+    assert.equal(contract.Metadata.EndConditions.PointLimit, 5);
+    assert.deepEqual(contract.Data.Bricks, [
+        'assembly:/_pro/scenes/missions/opulent/mission_stingray/versus_targets_opulent_stingray.brick',
+        'assembly:/_pro/scenes/missions/opulent/mission_stingray/versus_items_opulent_stingray.brick',
+        'assembly:/_pro/scenes/missions/opulent/mission_stingray/versus_entrance_opulent_stingray.brick',
+        'assembly:/_PRO/Scenes/bricks/ui_versus.brick',
+        'assembly:/_PRO/Scenes/bricks/vs_race_multiplayer.brick',
+    ]);
+    assert.ok(!contract.Data.VR, 'do not inherit another location\'s VR bricks');
+    const original = await json(`contractdata/${hawkesBay}.json`);
+    assert.deepEqual(contract.Data.Objectives[0].Definition, original.Data.Objectives[0].Definition);
+});
+
+test('both storefronts receive the added maps in menu/resources and join the same match', async t => {
     // Isolated profile and data copies: never read or modify a player's profile.
     const fixture = await mkdtemp(path.join(tmpdir(), 'ghost-maps-test-'));
     const previousDirectory = process.cwd();
@@ -105,33 +135,37 @@ test('both storefronts receive Hawke\'s Bay in menu/resources and join the same 
         });
         assert.equal(menu.status, 200);
         const { data } = await menu.json();
-        assert.ok(data.Presets.some(p => p.Id === hawkesBay));
-        const userCentric = data.UserCentricContracts.find(c => c.Contract.Metadata.Id === hawkesBay);
-        assert.ok(userCentric, 'contract survives user-centric generation');
-        assert.equal(userCentric.Data.LocationId, 'LOCATION_NEWZEALAND');
-        assert.equal(userCentric.Data.IsLocked, false);
-        const response = await post('/GetRequiredResourcesForPreset', { id: hawkesBay }, store);
-        assert.equal(response.status, 200);
-        const resources = await response.json();
-        assert.equal(resources.length, 1);
-        assert.equal(resources[0].Id, hawkesBay);
-        assert.equal(resources[0].Resources.length, 9);
-        assert.ok(resources[0].Resources.includes('assembly:/_pro/scenes/missions/sheep/versus_targets_newzealand.brick'));
+        for (const map of addedMaps) {
+            assert.ok(data.Presets.some(p => p.Id === map.id));
+            const userCentric = data.UserCentricContracts.find(c => c.Contract.Metadata.Id === map.id);
+            assert.ok(userCentric, 'contract survives user-centric generation');
+            assert.equal(userCentric.Data.LocationId, map.location);
+            assert.equal(userCentric.Data.IsLocked, false);
+            const response = await post('/GetRequiredResourcesForPreset', { id: map.id }, store);
+            assert.equal(response.status, 200);
+            const resources = await response.json();
+            assert.equal(resources.length, 1);
+            assert.equal(resources[0].Id, map.id);
+            assert.equal(resources[0].Resources.length, map.resources);
+            assert.ok(resources[0].Resources.includes(map.targetBrick));
+        }
     }
 
     // No changes to transport or match registration are needed for the new map.
-    for (const [hostStore, guestStore] of [['epic', 'steam'], ['steam', 'epic']]) {
-        const host = await post('/RegisterToMatch', {
-            presetId: hawkesBay, matchId: '00000000-0000-0000-0000-000000000000',
-        }, hostStore);
-        assert.equal(host.status, 200);
-        const { MatchId } = await host.json();
-        const guest = await post('/RegisterToMatch', { presetId: hawkesBay, matchId: MatchId }, guestStore);
-        assert.equal(guest.status, 200);
-        assert.equal((await guest.json()).MatchId, MatchId);
-        const matches = await (await fetch(origin + '/DebugMatches')).json();
-        const match = matches.find(m => m.matchId === MatchId);
-        assert.equal(match.matchData.contractId, hawkesBay);
-        assert.deepEqual(match.players, [profileIds[hostStore], profileIds[guestStore]]);
+    for (const map of addedMaps) {
+        for (const [hostStore, guestStore] of [['epic', 'steam'], ['steam', 'epic']]) {
+            const host = await post('/RegisterToMatch', {
+                presetId: map.id, matchId: '00000000-0000-0000-0000-000000000000',
+            }, hostStore);
+            assert.equal(host.status, 200);
+            const { MatchId } = await host.json();
+            const guest = await post('/RegisterToMatch', { presetId: map.id, matchId: MatchId }, guestStore);
+            assert.equal(guest.status, 200);
+            assert.equal((await guest.json()).MatchId, MatchId);
+            const matches = await (await fetch(origin + '/DebugMatches')).json();
+            const match = matches.find(m => m.matchId === MatchId);
+            assert.equal(match.matchData.contractId, map.id);
+            assert.deepEqual(match.players, [profileIds[hostStore], profileIds[guestStore]]);
+        }
     }
 });

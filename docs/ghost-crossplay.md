@@ -74,8 +74,8 @@ are supported.
 
 ### Hawke's Bay
 
-The H3 menu includes Miami, Santa Fortuna and Hawke's Bay, including the Random
-Map pool. Hawke's Bay uses the Ghost Mode mod's daytime **Anubis** mission, not
+The H3 menu includes Miami, Santa Fortuna, Hawke's Bay and Haven Island,
+including the Random Map pool. Hawke's Bay uses the Ghost Mode mod's daytime **Anubis** mission, not
 the Nightcall story contract. Both PCs need Ghost Mode assets **2.1.0 or newer**
 (2.3.0 recommended), which include the Hawke's Bay entities.
 
@@ -98,6 +98,34 @@ Definitions:
 
 Automated tests cover menu data, required resources and match registration in
 both store directions. Two-PC gameplay still needs a manual test.
+
+### Haven Island — one merged SMF mod
+
+Haven requires the workspace's merged `HITMAPS.GhostModeEnabler` **2.4.0**
+edition on both PCs. It contains Adam's `Ghost-Mode-Haven` gameplay assets;
+do not install/enable `Adam.GhostHaven` as a second mod. Replace the existing
+Ghost Mode folder in SMF's Mods directory and deploy on both PCs. Players still
+need their own installed Haven Island map content.
+
+Deploy the server with `docker compose up -d --build`, install the updated
+universal DLL on both PCs, and restart both games. The Haven Island invite tile
+follows Hawke's Bay; Haven is also included in the Random Map pool.
+
+- Contract and dedicated preset: `5e895adf-9879-44d9-b43f-13bb24e897bc`.
+- Scene: `assembly:/_pro/scenes/missions/opulent/mission_stingray/scene_stingray_basic.entity`.
+- Location: `LOCATION_OPULENT_STINGRAY`; entitlement: `LOCATION_OPULENT`.
+- Bricks: Haven's `versus_targets_opulent_stingray`,
+  `versus_items_opulent_stingray`, `versus_entrance_opulent_stingray`, plus
+  shared `ui_versus` and `vs_race_multiplayer`.
+- The merged targets asset includes the
+  `fDynamicScaleCloseupDistance: 0.0` field required by the current game; the
+  original standalone Haven asset fails SMF deployment without it.
+- Objective and five-point scoring follow the existing versus contracts; the
+  story contract is not reused as a playable versus contract.
+
+The original Haven assets were advertised for Steam only. Offline tests cover
+the merged package and both server-side host directions, but manual SMF
+deployment and two-PC gameplay are still required to validate Steam/Epic Haven.
 
 ## Implementation and tests
 
