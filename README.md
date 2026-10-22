@@ -1,13 +1,53 @@
-# Ghost Crossplay
+# Hitman Ghost Mode Crossplay
 
 A [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK) plugin that lets an Epic
-and a Steam player play HITMAN 3 Ghost Mode together. Either side hosts; the
-other joins with a five-digit room code. Players need no IP addresses, port
-forwarding or VPN.
+and a Steam player play HITMAN 3 Ghost Mode together.
 
-One `GhostCrossplay.dll` is installed on both PCs. It supports only HITMAN 3
-**3.280.0.0** (Epic and Steam builds, identified by SHA-256 in
-`src/game_build.h`). On any other executable it loads an inert panel.
+## Installation and Usage for Gamers
+
+To play ghost mode with crossplay enabled, you'll need the following requirements installed. Consult the respective installation guide for each of those:
+
+- [Simple Mod Framework](https://www.nexusmods.com/hitman3/mods/200)
+- [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK)
+- Modified Ghost Mode Assets Mod (see below)
+- CrossGhost.dll downloaded from release page and copied into `<Hitman Install Folder>/Retail/mods/`
+- LocalGhost Patcher is **NOT NEEDED!**
+
+### How to modify the Ghost Mode Assets Mod
+
+1. Download the original mod made by MrMike from [Nexus Mods](https://www.nexusmods.com/hitman3/mods/260).
+2. Open the zip archive, then go into the folder and copy the `manifest.json` out of the zip so that you can edit it.
+3. Edit the `manifest.json` file and add `,"epic"` to line 10 inside the square brackets.
+    - It should look like this afterwards: `"supportedPlatforms": ["steam", "epic"],`
+4. Copy the `manifest.json` back into the zip archive and overwrite the original file.
+5. Activate the mod using Simple Mod Framework.
+
+> Note: This mod is needed so that the game has all the assets needed for Ghost Mode.
+
+### Activating and Disabling the Mod
+
+Activating the mod is easily done by opening the ZHMModSDK Interface by pressing <kbd>insert</kbd>. Then open the mod list and enable CrossGhost.
+
+When toggling the mod on or off, you will **need to restart the game** for smooth operation. It can get buggy otherwise.
+
+### Hosting a lobby
+
+To host a lobby, follow these steps:
+
+1. Open Ghost Mode from main menu
+2. Go to Invite Player to the right and select a map
+3. When in the lobby, press <kbd>insert</kbd> to open ZHMModSDK and click the Host Button in the CrossGhost mod.
+4. Send the 5 Digit code to your friend.
+5. Both players press ready in Hitman and the match will begin.
+
+### Joining a lobby
+
+To join a lobby, follow these steps:
+
+1. Open Ghost Mode from main menu
+2. Press <kbd>insert</kbd> to open ZHMModSDK and enter the 5 Digit Code in the Text field from the CrossGhost mod.
+3. Click join and wait a few seconds until you're in the lobby and can see the other player.
+4. Ready up, when you're ready. The match will begin when both players are ready.
 
 ## How it works
 
