@@ -4,7 +4,7 @@ name: Release
 # xwin) and publishes it as a Forgejo release on every merge to main.
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 concurrency:
   group: release-main
@@ -24,9 +24,14 @@ jobs:
     defaults:
       run:
         shell: bash
-
+    
     steps:
-      - name: Check out the merge commit
+      - name: Install deps
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends lld jq unzip nodejs
+          rm -rf /var/lib/apt/lists/*
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -38,16 +43,12 @@ jobs:
         run: |
           set -euo pipefail
           export DEBIAN_FRONTEND=noninteractive
-
-          apt-get update -qq
-          apt-get install -y -qq --no-install-recommends lld jq unzip
-          rm -rf /var/lib/apt/lists/*
-
+          
           ln -sf /usr/bin/clang /usr/local/bin/clang-cl
           ln -sf /usr/bin/llvm-lib /usr/local/bin/llvm-lib
           ln -sf /usr/bin/llvm-rc /usr/local/bin/llvm-rc
           ln -sf "$(command -v lld-link || command -v lld-link-19)" /usr/local/bin/lld-link
-
+          
           if [[ ! -d /xwin/crt/include ]]; then
               xwin_version=0.10.0
               xwin_prefix="xwin-${xwin_version}-x86_64-unknown-linux-musl"
@@ -56,7 +57,7 @@ jobs:
               xwin --accept-license --cache-dir /root/.xwin-cache splat --output /xwin
               rm -rf /root/.xwin-cache
           fi
-
+          
           clang-cl --version | head -1
           lld-link --version
 
@@ -64,7 +65,7 @@ jobs:
         id: version
         run: |
           set -euo pipefail
-
+          
           # A monotonic counter keeps every merge to main publishable without
           # having to bump a file. The tag is created by the release below.
           version="v0.${{ github.run_number }}"
@@ -72,9 +73,9 @@ jobs:
               echo "Tag $version already exists. Delete that release/tag before re-running this workflow." >&2
               exit 1
           fi
-
+          
           previous="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
-
+          
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "previous=$previous" >> "$GITHUB_OUTPUT"
           echo "Publishing $version (previous tag: ${previous:-none})"
@@ -103,31 +104,31 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
+          
           if [[ -z "${GITHUB_TOKEN:-}" ]]; then
               echo "GITHUB_TOKEN is unavailable; make sure Forgejo Actions is enabled for this repository." >&2
               exit 1
           fi
-
+          
           version='${{ steps.version.outputs.version }}'
           api="${{ github.server_url }}/api/v1/repos/${{ github.repository }}"
           auth="Authorization: token ${GITHUB_TOKEN}"
-
+          
           payload="$(jq -n \
               --arg tag "$version" \
               --arg target '${{ github.sha }}' \
               --arg name "Ghost Crossplay $version" \
               --rawfile body release-notes.md \
               '{tag_name: $tag, target_commitish: $target, name: $name, body: $body, draft: false, prerelease: false}')"
-
+          
           release="$(curl -fsS -X POST \
               -H "$auth" -H 'Content-Type: application/json' \
               -d "$payload" "$api/releases")"
           release_id="$(jq -r '.id' <<<"$release")"
-
+          
           curl -fsS -X POST -H "$auth" \
               -F "attachment=@dist/GhostCrossplay.dll" \
               "$api/releases/${release_id}/assets?name=GhostCrossplay.dll" >/dev/null
-
+          
           echo "Published $version: $(jq -r '.html_url' <<<"$release")"
           sha256sum dist/GhostCrossplay.dll
