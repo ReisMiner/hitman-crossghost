@@ -10,7 +10,7 @@ To play ghost mode with crossplay enabled, you'll need the following requirement
 - [Simple Mod Framework](https://www.nexusmods.com/hitman3/mods/200)
 - [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK)
 - Modified Ghost Mode Assets Mod (see below)
-- CrossGhost.dll downloaded from release page and copied into `<Hitman Install Folder>/Retail/mods/`
+- GhostCrossplay.dll downloaded from the release page and copied into `<Hitman Install Folder>/Retail/mods/`
 - LocalGhost Patcher is **NOT NEEDED!**
 
 ### How to modify the Ghost Mode Assets Mod
@@ -98,8 +98,8 @@ vtable slot does not contain the expected function.
 
 ## Build
 
-Requirements: Visual Studio 2022 (x64 C++), CMake 3.20+, Git, PowerShell 7,
-and Node.js 20+ for the room tunnel test.
+Native Windows requirements: Visual Studio 2022 (x64 C++), CMake 3.20+, Git,
+PowerShell 7, and Node.js 20+ for the room tunnel test.
 
 ```powershell
 ./scripts/fetch-deps.ps1          # once: ZHMModSDK 4.1.1 and DirectX-Headers
@@ -112,6 +112,34 @@ ctest --test-dir build -C Release --output-on-failure
 `https://hitmanghost.ramon.cc`). Close HITMAN before running the tests; they
 bind UDP 30000. The `room-tunnel` test needs a LocalGhost checkout next to this
 folder (`../localghost`, or set `GHOST_LOCALGHOST_DIR`).
+
+### Building on Linux
+
+The same MSVC-ABI DLL can be cross-compiled on Linux with clang-cl, lld-link
+and the MSVC CRT/Windows SDK from [xwin](https://github.com/Jake-Shadle/xwin):
+
+```bash
+# once: unpack the CRT and Windows SDK (or set XWIN_ROOT)
+xwin --accept-license --cache-dir /root/.xwin-cache splat --output /xwin
+
+bash scripts/fetch-deps.sh
+bash scripts/build-linux.sh        # dist/GhostCrossplay.dll
+ctest --test-dir build-linux --output-on-failure
+```
+
+Requirements: clang/lld 19+, CMake 3.20+, Ninja, Git, unzip, and Wine for the
+tests. `CONFIG`, `GHOST_PUBLIC_ORIGIN`, `BUILD_DIR` and `XWIN_ROOT` can be set as
+environment variables. The `install-script` and `room-tunnel` tests need a
+native Windows host, so only `relay-metadata` runs here.
+
+## Releases
+
+Merging to `main` runs `.forgejo/workflows/release.yml` on a `docker` runner in
+`messense/cargo-xwin:0.23.1` (clang 19, lld, CMake, Ninja and Wine). It installs
+the xwin MSVC CRT/Windows SDK, cross-builds `dist/GhostCrossplay.dll`, runs the
+tests under Wine and publishes a `v0.<run_number>` release with the DLL
+attached. The release notes are generated from the commits since the previous
+release, including the merge request numbers referenced in their titles.
 
 ## Install
 

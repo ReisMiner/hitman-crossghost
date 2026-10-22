@@ -77,8 +77,12 @@ if(BUILD_TESTING)
     target_link_libraries(GhostRelayTests PRIVATE GhostNetTesting)
     add_test(NAME relay-metadata COMMAND GhostRelayTests)
 
-    add_test(NAME install-script COMMAND pwsh -NoProfile -File
-        "${CMAKE_CURRENT_SOURCE_DIR}/tests/install_test.ps1" -Source "$<TARGET_FILE:GhostCrossplay>")
+    # The installer test invokes pwsh and Windows paths, so it only runs on a
+    # Windows build host.
+    if(CMAKE_HOST_WIN32)
+        add_test(NAME install-script COMMAND pwsh -NoProfile -File
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/install_test.ps1" -Source "$<TARGET_FILE:GhostCrossplay>")
+    endif()
 
     add_executable(GhostRoomTests tests/room_relay_test.cpp)
     target_link_libraries(GhostRoomTests PRIVATE GhostNetTesting)
@@ -86,12 +90,14 @@ if(BUILD_TESTING)
     add_executable(GhostMockHost tests/mock_host.cpp)
     target_link_libraries(GhostMockHost PRIVATE GhostNetTesting)
 
+    # The room tunnel test starts a Node server and the cross-built test
+    # executable, so it needs a native Windows build host.
     set(ROOM_SERVICE "${GHOST_LOCALGHOST_DIR}/Server/components/ghostRooms/service.mjs")
-    if(EXISTS "${ROOM_SERVICE}")
+    if(CMAKE_HOST_WIN32 AND EXISTS "${ROOM_SERVICE}")
         find_program(NODE_EXECUTABLE node REQUIRED)
         add_test(NAME room-tunnel COMMAND "${NODE_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/room_tunnel_test.mjs" "${ROOM_SERVICE}" "$<TARGET_FILE:GhostRoomTests>")
     else()
-        message(STATUS "LocalGhost not found at ${GHOST_LOCALGHOST_DIR}; skipping the room-tunnel test")
+        message(STATUS "Skipping the room-tunnel test (requires a Windows host and LocalGhost)")
     endif()
 endif()

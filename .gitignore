@@ -1,6 +1,8 @@
 /build/
+/build-linux/
 /dist/
 /third_party/
+/.xwin-cache/
 *.user
 .vs/
 .idea/
