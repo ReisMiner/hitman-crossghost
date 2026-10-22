@@ -9,20 +9,9 @@ To play ghost mode with crossplay enabled, you'll need the following requirement
 
 - [Simple Mod Framework](https://www.nexusmods.com/hitman3/mods/200)
 - [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK)
-- Modified Ghost Mode Assets Mod (see below)
+- [Ghost Mode Assets Mod](https://git.ramon.cc/ramon/crossghost-assets/releases/latest) deployed with SMF
 - GhostCrossplay.dll downloaded from the [release page](https://git.ramon.cc/ramon/crossghost/releases/latest) and copied into `<Hitman Install Folder>/Retail/mods/`
 - LocalGhost Patcher is **NOT NEEDED!**
-
-### How to modify the Ghost Mode Assets Mod
-
-1. Download the original mod made by MrMike from [Nexus Mods](https://www.nexusmods.com/hitman3/mods/260).
-2. Open the zip archive, then go into the folder and copy the `manifest.json` out of the zip so that you can edit it.
-3. Edit the `manifest.json` file and add `,"epic"` to line 10 inside the square brackets.
-    - It should look like this afterwards: `"supportedPlatforms": ["steam", "epic"],`
-4. Copy the `manifest.json` back into the zip archive and overwrite the original file.
-5. Activate the mod using Simple Mod Framework.
-
-> Note: This mod is needed so that the game has all the assets needed for Ghost Mode.
 
 ### Activating and Disabling the Mod
 

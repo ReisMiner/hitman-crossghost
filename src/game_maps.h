@@ -21,6 +21,7 @@ inline void FillContractFromPreset(metadata::Fields& fields) {
         {"f5d7c89d-1428-42b2-b3cb-acaa036e246d", "d5ad70f4-7dbb-4b2b-b183-061778a51468"}, // Santa Fortuna
         {"d5ad70f4-7dbb-4b2b-b183-061778a51468", "d5ad70f4-7dbb-4b2b-b183-061778a51468"}, // legacy alias
         {"8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89", "8fcf8f5d-0fe9-47d7-bff3-d747d0cd1e89"}, // Hawke's Bay
+        {"5e895adf-9879-44d9-b43f-13bb24e897bc", "5e895adf-9879-44d9-b43f-13bb24e897bc"}, // Haven Island
     };
     for (const auto& map : maps) {
         if (preset->second == map.preset) {
