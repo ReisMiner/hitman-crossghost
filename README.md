@@ -83,7 +83,15 @@ scripts/                  Dependency download and game installation
 Game addresses are RVAs for the exact executables above. If the game updates,
 every value in `epic_offsets.h`, `steam_offsets.h` and the backend layouts in
 `backend_patch.cpp` must be re-derived; hook installation refuses to run if a
-vtable slot does not contain the expected function.
+vtable slot does not contain the expected function. After updating the hashes
+and offsets, check them against the installed executables (no game launch):
+
+```powershell
+python scripts/verify-game-build.py --epic '<Epic>\Retail\HITMAN3.exe' --steam '<Steam>\Retail\HITMAN3.exe'
+```
+
+`kGameVersion` in `game_build.h` is also the build the room service accepts, so
+LocalGhost's `ghostRooms/service.mjs` must be updated and redeployed alongside.
 
 ## Build
 
@@ -91,7 +99,7 @@ Native Windows requirements: Visual Studio 2022 (x64 C++), CMake 3.20+, Git,
 PowerShell 7, and Node.js 20+ for the room tunnel test.
 
 ```powershell
-./scripts/fetch-deps.ps1          # once: ZHMModSDK 4.1.1 and DirectX-Headers
+./scripts/fetch-deps.ps1          # once: ZHMModSDK 4.2.1 and DirectX-Headers
 ./build.ps1 -NoPublish            # build/Release/GhostCrossplay.dll
 ./build.ps1                       # also copies the DLL to dist/
 ctest --test-dir build -C Release --output-on-failure
@@ -132,7 +140,7 @@ release, including the merge request numbers referenced in their titles.
 
 ## Install
 
-Install the same DLL on both PCs. ZHMModSDK 4.1.1 and the Ghost Mode assets must
+Install the same DLL on both PCs. ZHMModSDK 4.2.1 and the Ghost Mode assets must
 already be installed. Close HITMAN, then (elevated for Program Files):
 
 ```powershell

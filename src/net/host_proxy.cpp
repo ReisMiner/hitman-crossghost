@@ -160,6 +160,14 @@ bool IsHostLobbyReady() {
     return g_lobby.lobbyActive && g_lobby.transportReady && metadata::Missing(g_lobby.fields).empty();
 }
 
+std::string HostLobbyBlocker() {
+    std::lock_guard lock(g_lobby.mutex);
+    if (!g_lobby.lobbyActive) return "Host: waiting for a native host lobby (open Ghost Mode and choose a map)";
+    if (!g_lobby.transportReady) return "Host: waiting for the lobby's UDP transport";
+    const std::string missing = metadata::Missing(g_lobby.fields);
+    return missing.empty() ? std::string() : "Host: waiting for lobby data: " + missing;
+}
+
 void PublishHostLobbyField(std::string_view key, std::string_view value) {
     // Native version fields are gamever_<platform member id>. The guest maps
     // this host's published version to its synthetic host member ID.

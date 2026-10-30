@@ -1,7 +1,7 @@
 #pragma once
 
 // Identifies the running HITMAN executable. Every offset in this project is
-// only valid for these exact HITMAN 3.280.0.0 builds.
+// only valid for these exact HITMAN 3.290.1.0 builds.
 
 #include <string>
 #include <string_view>
@@ -9,9 +9,11 @@
 namespace ghost {
 
 inline constexpr std::string_view kEpicSha256 =
-    "005412cf59daa1aadfba8deb05f097f5418aec57ddc98216483d93bf5b0119b1";
+    "bde3d362efeaf546587d0f3d282bcc83990741295359c90f5ec8668fa51aa00f";
 inline constexpr std::string_view kSteamSha256 =
-    "5633ec37835e8ce3612fbe6b3043b16e6d6695c1ba305a1d2473c702cc31ed7b";
+    "0e0dc96305bf26c2d9b1d3e65c31f549987a779901fa2750d2f93cb0d4a441ef";
+
+inline constexpr char kGameVersion[] = "3.290.1.0";
 
 enum class Storefront { Unsupported, Epic, Steam };
 

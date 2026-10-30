@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <string>
 #include <string_view>
 
 namespace ghost {
@@ -23,6 +24,8 @@ void BeginHostLobby();
 void EndHostLobby();
 void SetHostLobbyTransportReady();
 bool IsHostLobbyReady();
+// Why the host lobby is not ready yet, for the UI; empty once it is.
+std::string HostLobbyBlocker();
 
 // Records one native lobby-data write. Unknown keys are ignored.
 void PublishHostLobbyField(std::string_view key, std::string_view value);

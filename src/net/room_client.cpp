@@ -3,6 +3,7 @@
 #include <Windows.h>
 #include <winhttp.h>
 
+#include "game_build.h"
 #include "net/room_client.h"
 #include "net/room_protocol.h"
 #include "net/udp.h"
@@ -25,7 +26,6 @@ namespace ghost::rooms {
 namespace {
 
 constexpr const char* kProtocol = "1";
-constexpr const char* kGameBuild = "3.280.0.0";
 constexpr uint64_t kHelloIntervalMs = 2000;
 constexpr uint64_t kHelloRetryMs = 500;
 constexpr uint64_t kConnectTimeoutMs = 10000;
@@ -219,7 +219,7 @@ struct Client::Impl {
             Winsock winsock;
             service = std::make_unique<RoomService>(url);
             credentials = service->Post(host ? L"/v1/rooms/create" : L"/v1/rooms/join",
-                {{"Protocol", kProtocol}, {"Build", kGameBuild},
+                {{"Protocol", kProtocol}, {"Build", kGameVersion},
                     {"Store", store.empty() ? (host ? "epic" : "steam") : store}, {"RoomCode", code}});
             Relay(host, hostProxyPort, *service, credentials);
         } catch (const std::exception& error) {

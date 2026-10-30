@@ -87,7 +87,7 @@ void TestCodec() {
     response.fields["oversized"] = std::string(kMaxValue + 1, 'x');
     Require(Encode(response).empty(), "oversized field encoded");
     Fields pending{{"ContractId", ""}, {"PresetId", "preset"}, {"gameMode", "versus"},
-        {"HostPublicKey", "key"}, {"HostGameVersion", "3.280.0.0"}};
+        {"HostPublicKey", "key"}, {"HostGameVersion", "3.290.1.0"}};
     Require(!Missing(pending).empty(), "unresolved match advertised as ready");
     pending["matchId"] = "00000000-0000-0000-0000-000000000000";
     Require(!Missing(pending).empty(), "nil match advertised as joinable");
@@ -114,7 +114,7 @@ void TestRelay() {
         "inactive lobby advertised metadata");
     BeginHostLobby();
     for (auto [key, value] : metadata::Fields{{"ContractId", "contract"}, {"PresetId", "preset"},
-        {"gameMode", "versus"}, {"HostPublicKey", "current-key"}, {"gamever_actual-host", "3.280.0.0"}})
+        {"gameMode", "versus"}, {"HostPublicKey", "current-key"}, {"gamever_actual-host", "3.290.1.0"}})
         PublishHostLobbyField(key, value);
     SetHostLobbyTransportReady();
     control.Send(query, port);

@@ -38,7 +38,6 @@ using UpdateMethod = void*(__fastcall*)(void*, void*);
 using RunCallbacks = void(__cdecl*)();
 
 constexpr uint16_t kHostProxyPort = 30001;
-constexpr const char* kGameVersion = "3.280.0.0";
 
 rooms::Client g_room;
 DeferredRoomClose g_roomClose;
@@ -151,7 +150,7 @@ void TryPublishHostKey() {
     lastAttempt = now;
     // Only the network manager owns the connected key provider; don't probe
     // the lobby state's +0xb0 before the network state exists.
-    PublishKeyFromProvider(ReadPointer(GameAddress(rva::kNetworkManager + 0x20)));
+    PublishKeyFromProvider(ReadPointer(GameAddress(rva::kNetworkContextPointer)));
 }
 
 void __fastcall ObserveHostLobbyWrite(void*, void* key, void* value) {

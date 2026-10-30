@@ -15,7 +15,7 @@
 namespace ghost {
 namespace {
 
-// Patch sites (RVAs) in each HITMAN 3.280 build, matching LocalGhost's patcher.
+// Patch sites (RVAs) in each HITMAN 3.290.1 build, derived from LocalGhost signatures.
 struct BackendLayout {
     uintptr_t domain;    // ZConfigString with the backend host name (256-byte buffer)
     uintptr_t auth1;     // jne skipping the custom-backend authentication path
@@ -26,8 +26,8 @@ struct BackendLayout {
     uintptr_t dynamic;   // "use dynamic resources" flag
 };
 
-constexpr BackendLayout kEpicLayout{0x2342a48, 0xcac96c, 0xcac9a2, 0xfde03d, 0x1eb51c0, 0xcd2cbd, 0x3bed138};
-constexpr BackendLayout kSteamLayout{0x234e608, 0xcac67c, 0xcac6b2, 0xfe060d, 0x1ebfa20, 0xcd2a8d, 0x3bfa538};
+constexpr BackendLayout kEpicLayout{0x2361ac8, 0xcc23dc, 0xcc2412, 0xff68cd, 0x1ed0f50, 0xce910d, 0x3c0dd88};
+constexpr BackendLayout kSteamLayout{0x236d668, 0xcc20cc, 0xcc2102, 0xff8e7d, 0x1edb650, 0xce8ebd, 0x3c1af08};
 
 using Bytes = std::vector<uint8_t>;
 

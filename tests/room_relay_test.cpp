@@ -68,7 +68,7 @@ void Integration(const std::string& url, const std::string& expectedBackend) {
     Require(StartHostProxy(proxyPort), "start native host proxy");
     BeginHostLobby();
     for (const auto& [key, value] : metadata::Fields{{"PresetId", "miami"}, {"matchId", "current-match"},
-        {"HostGameVersion", "3.280.0.0"}, {"HostPublicKey", "native-key"}, {"gameMode", "versus"}}) PublishHostLobbyField(key, value);
+        {"HostGameVersion", "3.290.1.0"}, {"HostPublicKey", "native-key"}, {"gameMode", "versus"}}) PublishHostLobbyField(key, value);
     SetHostLobbyTransportReady();
     rooms::Client host, guest;
     Require(host.Start(true, {}, proxyPort, url), "start host room");

@@ -15,14 +15,14 @@ set(GHOST_DEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party" CACHE PATH
 set(GHOST_LOCALGHOST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../localghost" CACHE PATH
     "LocalGhost checkout, used by the room tunnel integration test")
 
-if(NOT EXISTS "${GHOST_DEPS_DIR}/ZHMModSDK-4.1.1/CMakeLists.txt")
+if(NOT EXISTS "${GHOST_DEPS_DIR}/ZHMModSDK-4.2.1/CMakeLists.txt")
     message(FATAL_ERROR "ZHMModSDK not found in ${GHOST_DEPS_DIR}. Run scripts/fetch-deps.ps1 first.")
 endif()
 
-# ZHMModSDK 4.1.1 DevPkg; the game ships the identical SDK runtime.
-set(ZHMMODSDK_DIST_DIR "${GHOST_DEPS_DIR}/ZHMModSDK-4.1.1/release" CACHE PATH "" FORCE)
-set(ZHMMODSDK_INCLUDE_DIR "${GHOST_DEPS_DIR}/ZHMModSDK-4.1.1/include" CACHE PATH "" FORCE)
-add_subdirectory("${GHOST_DEPS_DIR}/ZHMModSDK-4.1.1" "${CMAKE_BINARY_DIR}/zhmdevpkg")
+# ZHMModSDK 4.2.1 DevPkg; the game ships the identical SDK runtime.
+set(ZHMMODSDK_DIST_DIR "${GHOST_DEPS_DIR}/ZHMModSDK-4.2.1/release" CACHE PATH "" FORCE)
+set(ZHMMODSDK_INCLUDE_DIR "${GHOST_DEPS_DIR}/ZHMModSDK-4.2.1/include" CACHE PATH "" FORCE)
+add_subdirectory("${GHOST_DEPS_DIR}/ZHMModSDK-4.2.1" "${CMAKE_BINARY_DIR}/zhmdevpkg")
 
 # Networking code shared by the plugin and the tests. No game or SDK dependency.
 # GhostNet embeds the public origin; GhostNetTesting leaves it empty so tests

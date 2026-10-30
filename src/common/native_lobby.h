@@ -1,6 +1,6 @@
 #pragma once
 
-// Layout shared by the Epic and Steam builds of HITMAN 3.280's native lobby
+// Layout shared by the Epic and Steam builds of HITMAN 3.290.1's native lobby
 // state machine (ZLobbyIdle, ZLobbyCreateLocalHost, ZLobbyConnected, ...).
 
 #include "common/memory.h"

@@ -41,11 +41,13 @@ rooms::Client g_room;
 DeferredRoomClose g_roomClose;
 Guest g_guest(g_room, g_roomClose);
 
-std::string g_gameVersion;                   // e.g. "3.280.0.0", sent as HostGameVersion
+std::string g_gameVersion;                   // e.g. "3.290.1.0", sent as HostGameVersion
 std::atomic<bool> g_hostLobbyActive{false};  // a LocalHost lobby is running
 void* g_observedHostState = nullptr;
 std::atomic<void*> g_rakPeer{nullptr};       // RakPeer after a successful Startup
 std::atomic<bool> g_hooksInstalled{false};
+// Last reason EnableNativeUdp stopped early, shown while the host waits for transport.
+std::atomic<const char*> g_transportIssue{"RakNet has not connected a lobby yet"};
 
 struct Hooks {
     PointerHook lobbyIdleUpdate;
@@ -143,20 +145,30 @@ std::string ReadGameVersion() {
 // each lobby restarts RakNet with a new socket.
 void EnableNativeUdp(bool hosting) {
     void* rakPeer = g_rakPeer.load(std::memory_order_acquire);
-    if (rakPeer == nullptr) return;
+    if (rakPeer == nullptr) {
+        g_transportIssue.store("RakPeer::Startup was not observed");
+        return;
+    }
     DisableHostNatWarning();
     ReportOpenNatToEos();
 
     void* sockets = ReadPointer(FieldPointer<void>(rakPeer, 0x5a8));
     void* socket = sockets != nullptr ? ReadPointer(sockets) : nullptr;
-    if (!IsReadable(socket, 0x88) || *static_cast<uintptr_t*>(socket) != GameBase() + rva::kRakNetSocketVtable) return;
+    if (!IsReadable(socket, 0x88) || *static_cast<uintptr_t*>(socket) != GameBase() + rva::kRakNetSocketVtable) {
+        g_transportIssue.store("RakNet socket was not recognized");
+        return;
+    }
 
     auto** overrideSlot = FieldPointer<void*>(socket, 0x80);
     void* layerOverride = *overrideSlot;
     if (layerOverride != nullptr &&
         (!IsReadable(layerOverride, sizeof(uintptr_t)) ||
-         *static_cast<uintptr_t*>(layerOverride) != GameBase() + rva::kEpicSocketOverrideVtable)) return;
+         *static_cast<uintptr_t*>(layerOverride) != GameBase() + rva::kEpicSocketOverrideVtable)) {
+        g_transportIssue.store("EOS socket override was not recognized");
+        return;
+    }
     InterlockedExchangePointer(overrideSlot, nullptr);
+    g_transportIssue.store("");
     if (hosting) {
         ResetHostProxyPeer();
         SetHostLobbyTransportReady();
@@ -281,7 +293,7 @@ bool InstallHooks() {
         {g_hooks.connectedExit, rva::kConnectedVtable, 6, rva::kConnectedExit, &LobbyConnectedExitDetour},
         {g_hooks.connectedUpdate, rva::kConnectedVtable, 10, rva::kConnectedUpdate, &LobbyConnectedUpdateDetour},
         {g_hooks.multiplayerIdleEnter, rva::kMultiplayerIdleVtable, 5, rva::kMultiplayerIdleEnter, &MultiplayerIdleEnterDetour},
-        {g_hooks.rakPeerStartup, rva::kRakPeerVtable, 6, rva::kRakPeerStartup, &RakPeerStartupDetour},
+        {g_hooks.rakPeerStartup, rva::kRakPeerVtable, 1, rva::kRakPeerStartup, &RakPeerStartupDetour},
         {g_hooks.networkConnectingEnter, rva::kNetworkConnectingVtable, 5, rva::kNetworkConnectingEnter, &NetworkConnectingEnterDetour},
         {g_hooks.networkConnectedEnter, rva::kNetworkConnectedVtable, 5, rva::kNetworkConnectedEnter, &NetworkConnectedEnterDetour},
         {g_hooks.replicaNewConnection, rva::kReplicaManagerVtable, 8, rva::kReplicaOnNewConnection, &ReplicaNewConnectionDetour},
@@ -331,6 +343,11 @@ public:
         panel.room = g_room.Get();
         const bool busy = rooms::IsBusy(panel.room.state);
         panel.canHost = m_backendReady && IsHostLobbyReady() && !busy;
+        if (hooks && !busy && !panel.canHost) {
+            panel.notice = HostLobbyBlocker();
+            const char* transport = g_transportIssue.load();
+            if (panel.notice.ends_with("transport") && transport[0]) panel.notice += std::string(" (") + transport + ")";
+        }
         panel.canJoin = m_backendReady && hooks && !busy;
         panel.showClose = busy;
 

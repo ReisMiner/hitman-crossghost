@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     ghost::PublishHostLobbyField("ContractId", "c854d9c7-8991-42db-a2e4-3cf93e645e81");
     ghost::PublishHostLobbyField("matchId", "8fd8cb9f-1f60-49b0-8fb7-85621285fd75");
     ghost::PublishHostLobbyField("gameMode", "versus");
-    ghost::PublishHostLobbyField("HostGameVersion", "3.280.0.0");
+    ghost::PublishHostLobbyField("HostGameVersion", "3.290.1.0");
     ghost::PublishHostLobbyField("HostPublicKey",
         "tI3lexI8AneS0kKQiplRqm0j3WDYxiHPOLN8qZ11CHDAJ/tK+1AAhAxLXXCedaf6GQlhfeVuE3tbdqB8XOTs2A==");
     ghost::SetHostLobbyTransportReady();
