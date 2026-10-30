@@ -98,7 +98,7 @@ test('one LocalGhost listener serves game config/auth and room-code UDP transpor
     async function post(operation, values) {
         const response = await request('/v1/rooms/' + operation, {
             method: 'POST', headers: { 'Content-Type': 'application/octet-stream' },
-            body: fieldsEncode({ Protocol: '1', Build: '3.280.0.0', ...values }),
+            body: fieldsEncode({ Protocol: '1', Build: '3.290.1.0', ...values }),
         });
         return { status: response.status, fields: fieldsDecode(Buffer.from(await response.arrayBuffer())) };
     }

@@ -139,9 +139,12 @@ appears in **Invite Player** after Haven and is part of Random Map.
 - Location: `LOCATION_PARIS`; entitlement: `LOCATION_PARIS`.
 - Bricks: `versus_targets_paris`, `versus_items_paris`,
   `versus_entrance_paris`, plus shared `ui_versus` and `vs_race_multiplayer`.
-- The asset mod adds 18 paired starts in nine areas, six Ghost item crates and
-  12 new target NPCs placed at native Showstopper positions. The story targets
-  and native scene are left intact.
+- The asset mod adds 24 player starts in 12 public-ground-floor pairs, 24 mixed
+  item crates (eight each of Ghost equipment, tools/poisons and weapons) and
+  42 new target NPCs with three-stop local patrol loops. Their
+  coordinates are checked against native access volumes, navigation and exported
+  map geometry; runtime collision and two-PC gameplay still need manual testing.
+  The story targets and native scene are left intact.
 - The target picker is the same H3 versus composite used by Hawke's Bay. Its
   target list, roles and drama situations are authored in the Paris targets
   brick; the existing `vs_race_multiplayer` rules provide selection/scoring.

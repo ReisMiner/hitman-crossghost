@@ -43,7 +43,7 @@ test('real HTTP/UDP: room lifecycle, auth, channels, replay, rebinding and expir
     t.after(() => { host.close(); guest.close(); other.close(); });
     async function post(path, values) {
         const result = await fetch(`http://127.0.0.1:${address.httpPort}/v1/rooms/${path}`, {
-            method: 'POST', body: fieldsEncode({ Protocol: '1', Build: '3.280.0.0', ...values }),
+            method: 'POST', body: fieldsEncode({ Protocol: '1', Build: '3.290.1.0', ...values }),
         });
         return { status: result.status, fields: fieldsDecode(Buffer.from(await result.arrayBuffer())) };
     }

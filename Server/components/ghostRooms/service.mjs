@@ -81,7 +81,7 @@ export function createRoomService({ backendUrl = '', host = '127.0.0.1', udpPort
                 }
                 reply(res, 200, { Status: 'Closed' }); return;
             }
-            if (fields.Protocol !== '1' || fields.Build !== '3.280.0.0') {
+            if (fields.Protocol !== '1' || fields.Build !== '3.290.1.0') {
                 reply(res, 409, { Error: 'Incompatible client protocol or game build' }); return;
             }
             if (req.url === '/v1/rooms/create') {
