@@ -19,7 +19,7 @@ struct Snapshot {
 
 inline bool IsBusy(State state) { return state == State::Connecting || state == State::Ready; }
 
-// A room on the LocalGhost relay. The worker thread does HTTPS, DNS, keepalives
+// A room on the CrossGhost server relay. The worker thread does HTTPS, DNS, keepalives
 // and UDP forwarding; the game and UI threads only call Start/Cancel/Get.
 //
 // Host: datagrams from the guest are delivered to the loopback host proxy on

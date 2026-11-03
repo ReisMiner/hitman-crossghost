@@ -266,7 +266,9 @@ def check_table(pe, name, rva):
 # The reviewed Update slot is 10, including LocalHost's unhooked helper. These
 # checks establish hash-bound, RTTI-identified vtable entry boundaries; they do
 # not infer complete bodies from padding or assert execution of the functions.
-REVIEWED_EPIC_SHA256 = "bde3d362efeaf546587d0f3d282bcc83990741295359c90f5ec8668fa51aa00f"
+# 2026-11-03: Epic patch a63b6782... has the same size, PE timestamp, section
+# layout and bytes at all three leaves (slot 10 unchanged); NAT body digest still matches.
+REVIEWED_EPIC_SHA256 = "a63b678253965d037b497a53858a74cc2196184df5661c5385fc9bf9fc45ee82"
 REVIEWED_EPIC_VTABLE_LEAVES = {
     "kLobbyIdleUpdate": (0x10077c0, "kLobbyIdleVtable", 10),
     "kLocalHostUpdate": (0x10140b0, "kLocalHostVtable", 10),
@@ -323,7 +325,7 @@ def check_code(pe, store, name, addresses, digest):
         return check_rakpeer_startup(pe, rva)
     if store != "epic" or name not in {*REVIEWED_EPIC_VTABLE_LEAVES, "kHostNatCheck"}:
         return pe.code_start(rva)
-    require(digest == REVIEWED_EPIC_SHA256, "reviewed leaf requires exact Epic 3.290.1 image SHA256")
+    require(digest == REVIEWED_EPIC_SHA256, "reviewed leaf requires the reviewed Epic 3.290.1 image SHA256")
     pe.code_boundary(rva)  # Still reject non-code, .pdata interiors and unpadded leaves.
     if name == "kHostNatCheck":
         return check_nat_body(pe, rva)

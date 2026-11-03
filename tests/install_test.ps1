@@ -15,10 +15,11 @@ try {
     [IO.File]::WriteAllText($modsIni, $settings)
     [IO.File]::WriteAllText((Join-Path $mods 'GhostDiagnostic.dll'), 'old Epic binary')
     [IO.File]::WriteAllText((Join-Path $mods 'GhostGuest.dll'), 'old Steam binary')
+    [IO.File]::WriteAllText((Join-Path $mods 'GhostCrossplay.dll'), 'pre-rename binary')
     [IO.File]::WriteAllText((Join-Path $mods 'ghostdiagnostic.ini'), "[ghost_diagnostic]`r`nforce_local_host = false`r`n")
     [IO.File]::WriteAllText((Join-Path $mods 'ghostguest.ini'), "[ghost_guest]`r`nRelayTarget = 10.0.0.9:30001`r`n")
     $legacyHashes = @{}
-    foreach ($name in @('GhostDiagnostic.dll', 'GhostGuest.dll', 'ghostdiagnostic.ini', 'ghostguest.ini')) {
+    foreach ($name in @('GhostDiagnostic.dll', 'GhostGuest.dll', 'GhostCrossplay.dll', 'ghostdiagnostic.ini', 'ghostguest.ini')) {
         $legacyHashes[$name] = (Get-FileHash -LiteralPath (Join-Path $mods $name)).Hash
     }
 
@@ -26,7 +27,9 @@ try {
     Require ($result.sha256 -eq (Get-FileHash -LiteralPath $Source).Hash) 'Installed bytes differ from the supplied universal DLL.'
     Require (!(Test-Path -LiteralPath (Join-Path $mods 'GhostDiagnostic.dll'))) 'Legacy Epic DLL remains loadable.'
     Require (!(Test-Path -LiteralPath (Join-Path $mods 'GhostGuest.dll'))) 'Legacy Steam DLL remains loadable.'
-    Require ($result.backups.Count -eq 2) 'Both original DLLs must be backed up.'
+    Require (!(Test-Path -LiteralPath (Join-Path $mods 'GhostCrossplay.dll'))) 'Pre-rename GhostCrossplay DLL remains loadable.'
+    Require ((Split-Path $result.target -Leaf) -eq 'CrossGhost.dll') 'Plugin was not installed as CrossGhost.dll.'
+    Require ($result.backups.Count -eq 3) 'Every legacy DLL must be backed up.'
     foreach ($backup in $result.backups) {
         $name = Split-Path $backup.Original -Leaf
         Require ((Get-FileHash -LiteralPath $backup.Backup).Hash -eq $legacyHashes[$name]) 'A legacy DLL backup changed bytes.'
@@ -36,10 +39,10 @@ try {
     }
     $enabled = [IO.File]::ReadAllText($modsIni)
     Require ($enabled.StartsWith($settings)) 'Unrelated SDK settings were changed.'
-    Require ($enabled.Contains('[GhostCrossplay]')) 'Universal plugin was not enabled.'
+    Require ($enabled.Contains('[CrossGhost]')) 'CrossGhost was not enabled.'
 
     # Reinstallation must retain user settings and avoid duplicate SDK sections.
-    $unifiedIni = Join-Path $mods 'ghostcrossplay.ini'
+    $unifiedIni = Join-Path $mods 'crossghost.ini'
     [IO.File]::WriteAllText($unifiedIni, "[ghost_guest]`r`nRelayTarget = 10.1.1.1:30001`r`n")
     $settingsHash = (Get-FileHash -LiteralPath $unifiedIni).Hash
     $second = (& $installer -Source $Source -GameRoot $fixture) | ConvertFrom-Json

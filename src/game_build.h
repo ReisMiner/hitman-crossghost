@@ -1,7 +1,8 @@
 #pragma once
 
 // Identifies the running HITMAN executable. Every offset in this project is
-// only valid for these exact HITMAN 3.290.1.0 builds.
+// only valid for these exact HITMAN 3.290.1.0 builds (2026-11-03 patch; same
+// size, PE timestamp and addresses as the 2026-10-30 builds, only the hash changed).
 
 #include <string>
 #include <string_view>
@@ -9,9 +10,9 @@
 namespace ghost {
 
 inline constexpr std::string_view kEpicSha256 =
-    "bde3d362efeaf546587d0f3d282bcc83990741295359c90f5ec8668fa51aa00f";
+    "a63b678253965d037b497a53858a74cc2196184df5661c5385fc9bf9fc45ee82";
 inline constexpr std::string_view kSteamSha256 =
-    "0e0dc96305bf26c2d9b1d3e65c31f549987a779901fa2750d2f93cb0d4a441ef";
+    "0a337c7979a48b1c2d2e4cf7e80a63bf634c527b6bd301dfe46db8bb7f977b52";
 
 inline constexpr char kGameVersion[] = "3.290.1.0";
 

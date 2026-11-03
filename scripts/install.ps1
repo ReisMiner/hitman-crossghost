@@ -1,9 +1,9 @@
-# Installs GhostCrossplay.dll into a HITMAN 3 game directory and enables it in
-# ZHMModSDK's mods.ini. Older GhostDiagnostic.dll/GhostGuest.dll builds and any
-# previous GhostCrossplay.dll are renamed to timestamped backups. Rolls back on
+# Installs CrossGhost.dll into a HITMAN 3 game directory and enables it in
+# ZHMModSDK's mods.ini. Older GhostDiagnostic.dll/GhostGuest.dll/GhostCrossplay.dll
+# builds and any previous CrossGhost.dll are renamed to timestamped backups. Rolls back on
 # failure. Prints a JSON summary. Close HITMAN first; Program Files needs elevation.
 param(
-    [string]$Source = (Join-Path (Split-Path $PSScriptRoot -Parent) 'dist\GhostCrossplay.dll'),
+    [string]$Source = (Join-Path (Split-Path $PSScriptRoot -Parent) 'dist\CrossGhost.dll'),
     [string]$GameRoot = 'C:\Program Files\Epic Games\HITMAN3'
 )
 
@@ -13,13 +13,13 @@ if (!(Test-Path -LiteralPath $Source -PathType Leaf)) { throw "Missing plugin: $
 $mods = Join-Path $GameRoot 'Retail\mods'
 if (!(Test-Path -LiteralPath $mods -PathType Container)) { throw "Missing mods directory: $mods" }
 
-$target = Join-Path $mods 'GhostCrossplay.dll'
+$target = Join-Path $mods 'CrossGhost.dll'
 $token = (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + [guid]::NewGuid().ToString('N').Substring(0, 8)
 $staged = "$target.new-$token"
 $modsIni = Join-Path $GameRoot 'Retail\mods.ini'
 $hadModsIni = Test-Path -LiteralPath $modsIni
 $iniText = if ($hadModsIni) { [IO.File]::ReadAllText($modsIni) } else { '' }
-$enablePlugin = $iniText -notmatch '(?im)^\s*\[ghostcrossplay\]\s*(?:[;#].*)?$'
+$enablePlugin = $iniText -notmatch '(?im)^\s*\[crossghost\]\s*(?:[;#].*)?$'
 $iniBackup = $null
 $backups = @()
 $installed = $false
@@ -34,9 +34,9 @@ try {
         $iniBackup = "$modsIni.backup-$token"
         Copy-Item -LiteralPath $modsIni -Destination $iniBackup
     }
-    # Retire both legacy names so the SDK cannot install overlapping hooks.
-    # Keep their INIs for first-run settings migration by the unified plugin.
-    foreach ($name in @('GhostDiagnostic.dll', 'GhostGuest.dll', 'GhostCrossplay.dll')) {
+    # Retire the legacy names (GhostCrossplay.dll is the pre-CrossGhost name) so
+    # the SDK cannot install overlapping hooks. Their INIs are left untouched.
+    foreach ($name in @('GhostDiagnostic.dll', 'GhostGuest.dll', 'GhostCrossplay.dll', 'CrossGhost.dll')) {
         $path = Join-Path $mods $name
         if (Test-Path -LiteralPath $path) {
             $backup = "$path.backup-$token"
@@ -48,7 +48,7 @@ try {
     $installed = $true
     if ($enablePlugin) {
         $writingIni = $true
-        [IO.File]::WriteAllText($modsIni, $iniText + "`r`n[GhostCrossplay]`r`n", [Text.UTF8Encoding]::new($false))
+        [IO.File]::WriteAllText($modsIni, $iniText + "`r`n[CrossGhost]`r`n", [Text.UTF8Encoding]::new($false))
     }
 } catch {
     if ($installed) { Remove-Item -LiteralPath $target -Force }

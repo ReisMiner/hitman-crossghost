@@ -110,7 +110,7 @@ public:
     metadata::Fields Post(const wchar_t* path, const metadata::Fields& fields) const {
         const auto body = metadata::Encode({true, 1, 1, fields});
         if (body.empty()) throw std::runtime_error("Invalid room request fields");
-        HttpHandle session(WinHttpOpen(L"GhostCrossplay/1", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, nullptr, nullptr, 0));
+        HttpHandle session(WinHttpOpen(L"CrossGhost/1", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, nullptr, nullptr, 0));
         WinHttpSetTimeouts(session.handle, 3000, 3000, 3000, 3000);
         HttpHandle connection(WinHttpConnect(session.handle, m_host.c_str(), m_port, 0));
         HttpHandle request(WinHttpOpenRequest(connection.handle, L"POST", path, nullptr, nullptr, nullptr,
@@ -240,7 +240,7 @@ struct Client::Impl {
     void Relay(bool host, uint16_t hostProxyPort, const RoomService& service, const metadata::Fields& credentials) {
         if (std::string_view(GHOST_BACKEND_URL).size() &&
             CanonicalOrigin(credentials.at("BackendUrl")) != CanonicalOrigin(GHOST_BACKEND_URL))
-            throw std::runtime_error("Room service/backend configuration mismatch; update GhostCrossplay");
+            throw std::runtime_error("Room service/backend configuration mismatch; update CrossGhost");
         RoomId room;
         Token token;
         const uint8_t role = host ? kHostRole : kGuestRole;

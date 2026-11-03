@@ -1,19 +1,19 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(GhostCrossplay LANGUAGES CXX)
+project(CrossGhost LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 set(GHOST_PUBLIC_ORIGIN "https://hitmanghost.ramon.cc" CACHE STRING
-    "LocalGhost origin: game backend and room service")
+    "CrossGhost server origin: game backend and room service")
 option(GHOST_DEVELOPMENT_SERVICE_OVERRIDE
     "Allow the GHOST_SERVICE_URL environment variable to override the room service (testing only)" OFF)
 set(GHOST_DEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party" CACHE PATH
     "ZHMModSDK and DirectX-Headers (scripts/fetch-deps.ps1)")
 set(GHOST_LOCALGHOST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../localghost" CACHE PATH
-    "LocalGhost checkout, used by the room tunnel integration test")
+    "CrossGhost server checkout (crossghost-server), used by the room tunnel integration test")
 
 if(NOT EXISTS "${GHOST_DEPS_DIR}/ZHMModSDK-4.2.1/CMakeLists.txt")
     message(FATAL_ERROR "ZHMModSDK not found in ${GHOST_DEPS_DIR}. Run scripts/fetch-deps.ps1 first.")
@@ -46,7 +46,7 @@ target_compile_definitions(GhostNet PRIVATE
     GHOST_BACKEND_URL="${GHOST_PUBLIC_ORIGIN}"
     $<$<BOOL:${GHOST_DEVELOPMENT_SERVICE_OVERRIDE}>:GHOST_DEVELOPMENT_SERVICE_OVERRIDE>)
 
-add_library(GhostCrossplay SHARED
+add_library(CrossGhost SHARED
     src/plugin_entry.cpp
     src/game_build.cpp
     src/backend/backend_patch.cpp
@@ -57,12 +57,12 @@ add_library(GhostCrossplay SHARED
     src/steam/steam_lobby_shim.cpp
     src/steam/steam_plugin.cpp
     src/ui/room_panel.cpp)
-target_include_directories(GhostCrossplay PRIVATE src "${GHOST_DEPS_DIR}/DirectX-Headers/include")
-target_compile_definitions(GhostCrossplay PRIVATE
+target_include_directories(CrossGhost PRIVATE src "${GHOST_DEPS_DIR}/DirectX-Headers/include")
+target_compile_definitions(CrossGhost PRIVATE
     SPDLOG_FMT_EXTERNAL
     GHOST_BACKEND_URL="${GHOST_PUBLIC_ORIGIN}")
-target_compile_options(GhostCrossplay PRIVATE /utf-8)
-target_link_libraries(GhostCrossplay PRIVATE
+target_compile_options(CrossGhost PRIVATE /utf-8)
+target_link_libraries(CrossGhost PRIVATE
     GhostNet
     ZHMModSDK
     "${ZHMMODSDK_DIST_DIR}/lib/implot.lib"
@@ -85,7 +85,7 @@ if(BUILD_TESTING)
     # Windows build host.
     if(CMAKE_HOST_WIN32)
         add_test(NAME install-script COMMAND pwsh -NoProfile -File
-            "${CMAKE_CURRENT_SOURCE_DIR}/tests/install_test.ps1" -Source "$<TARGET_FILE:GhostCrossplay>")
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/install_test.ps1" -Source "$<TARGET_FILE:CrossGhost>")
     endif()
 
     add_executable(GhostRoomTests tests/room_relay_test.cpp)
@@ -102,6 +102,6 @@ if(BUILD_TESTING)
         add_test(NAME room-tunnel COMMAND "${NODE_EXECUTABLE}"
             "${CMAKE_CURRENT_SOURCE_DIR}/tests/room_tunnel_test.mjs" "${ROOM_SERVICE}" "$<TARGET_FILE:GhostRoomTests>")
     else()
-        message(STATUS "Skipping the room-tunnel test (requires a Windows host and LocalGhost)")
+        message(STATUS "Skipping the room-tunnel test (requires a Windows host and the CrossGhost server checkout)")
     endif()
 endif()

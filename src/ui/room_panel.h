@@ -18,7 +18,7 @@ struct RoomPanelState {
 
 enum class RoomPanelAction { None, Host, Join, Close };
 
-// Draws the "Ghost Crossplay" SDK window. For Join, `joinCode` holds the
+// Draws the "CrossGhost" SDK window. For Join, `joinCode` holds the
 // entered five-digit code.
 RoomPanelAction DrawRoomPanel(const RoomPanelState& state, std::string& joinCode);
 

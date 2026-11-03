@@ -7,7 +7,7 @@ namespace ghost::ui {
 RoomPanelAction DrawRoomPanel(const RoomPanelState& state, std::string& joinCode) {
     ImGui::SetNextWindowPos(ImVec2(120, 120), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(560, 0), ImGuiCond_FirstUseEver);
-    if (!ImGui::Begin("Ghost Crossplay", nullptr, ImGuiWindowFlags_NoCollapse)) {
+    if (!ImGui::Begin("CrossGhost", nullptr, ImGuiWindowFlags_NoCollapse)) {
         ImGui::End();
         return RoomPanelAction::None;
     }

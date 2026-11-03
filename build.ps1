@@ -1,9 +1,9 @@
-# Configures and builds GhostCrossplay.dll. Without -NoPublish the DLL is
+# Configures and builds CrossGhost.dll. Without -NoPublish the DLL is
 # copied to dist/. Run scripts/fetch-deps.ps1 once before the first build.
 param(
     [ValidateSet('Release', 'Debug')]
     [string]$Config = 'Release',
-    # LocalGhost origin compiled into the DLL (game backend and room service).
+    # CrossGhost server origin compiled into the DLL (game backend and room service).
     [string]$PublicOrigin = 'https://hitmanghost.ramon.cc',
     [switch]$NoPublish,
     # Lets GHOST_SERVICE_URL override the room service at runtime (testing only).
@@ -21,13 +21,13 @@ if ($LASTEXITCODE -ne 0) { throw "CMake configure failed with exit code $LASTEXI
 cmake --build $build --config $Config --parallel
 if ($LASTEXITCODE -ne 0) { throw "Build failed with exit code $LASTEXITCODE" }
 
-$dll = Join-Path $build "$Config\GhostCrossplay.dll"
+$dll = Join-Path $build "$Config\CrossGhost.dll"
 if (!(Test-Path -LiteralPath $dll)) { throw "Build did not produce $dll" }
 if (!$NoPublish) {
     if (!$PublicOrigin) { throw 'Publishing requires -PublicOrigin. Use -NoPublish for local development.' }
     New-Item -ItemType Directory -Force -Path $dist | Out-Null
-    Copy-Item -LiteralPath $dll -Destination (Join-Path $dist 'GhostCrossplay.dll') -Force
-    $dll = Join-Path $dist 'GhostCrossplay.dll'
+    Copy-Item -LiteralPath $dll -Destination (Join-Path $dist 'CrossGhost.dll') -Force
+    $dll = Join-Path $dist 'CrossGhost.dll'
     Write-Host "Universal DLL ready: $dll"
 }
 Get-FileHash -LiteralPath $dll -Algorithm SHA256 | Format-List Path, Hash

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cross-builds dist/GhostCrossplay.dll on Linux (MSVC ABI via clang-cl + xwin).
+# Cross-builds dist/CrossGhost.dll on Linux (MSVC ABI via clang-cl + xwin).
 # Mirrors build.ps1: CONFIG selects the build type, GHOST_PUBLIC_ORIGIN overrides
 # the backend origin, and BUILD_DIR overrides the build directory.
 set -euo pipefail
@@ -26,12 +26,12 @@ cmake -S "$root" -B "$build" -G Ninja \
     "${extra[@]}"
 cmake --build "$build" --parallel
 
-dll="$build/GhostCrossplay.dll"
+dll="$build/CrossGhost.dll"
 if [[ ! -f "$dll" ]]; then
     echo "Build did not produce $dll" >&2
     exit 1
 fi
 
 mkdir -p "$root/dist"
-cp "$dll" "$root/dist/GhostCrossplay.dll"
-sha256sum "$root/dist/GhostCrossplay.dll"
+cp "$dll" "$root/dist/CrossGhost.dll"
+sha256sum "$root/dist/CrossGhost.dll"

@@ -7,7 +7,7 @@
 namespace ghost {
 
 // Steam hosts may publish a preset without ContractId. The Epic join routine
-// needs ContractId; these single-map presets match LocalGhost's H3 menu data.
+// needs ContractId; these single-map presets match the CrossGhost server's H3 menu data.
 // Never replace a contract already chosen by the host (including Random Map).
 inline void FillContractFromPreset(metadata::Fields& fields) {
     const auto contract = fields.find("ContractId");

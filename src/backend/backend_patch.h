@@ -9,7 +9,7 @@
 
 namespace ghost {
 
-// Points HITMAN's online backend at the LocalGhost server compiled into this
+// Points HITMAN's online backend at the CrossGhost server compiled into this
 // DLL (GHOST_BACKEND_URL) by patching the game's backend configuration in
 // memory. Replaces the external LocalGhost patcher.
 //

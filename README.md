@@ -1,7 +1,8 @@
-# Hitman Ghost Mode Crossplay
+# CrossGhost
 
 A [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK) plugin that lets an Epic
-and a Steam player play HITMAN 3 Ghost Mode together.
+and a Steam player play HITMAN 3 Ghost Mode together, on every Ghost Mode map
+of the CrossGhost Assets mod.
 
 ## Installation and Usage for Gamers
 
@@ -9,9 +10,9 @@ To play ghost mode with crossplay enabled, you'll need the following requirement
 
 - [Simple Mod Framework](https://www.nexusmods.com/hitman3/mods/200)
 - [ZHMModSDK](https://github.com/OrfeasZ/ZHMModSDK)
-- [Ghost Mode Assets Mod](https://git.ramon.cc/ramon/crossghost-assets/releases/latest) deployed with SMF
-- GhostCrossplay.dll downloaded from the [release page](https://git.ramon.cc/ramon/crossghost/releases/latest) and copied into `<Hitman Install Folder>/Retail/mods/`
-- LocalGhost Patcher is **NOT NEEDED!**
+- [CrossGhost Assets](https://git.ramon.cc/ramon/crossghost-assets/releases/latest) (`ramoncc.CrossGhostAssets`) deployed with SMF
+- CrossGhost.dll downloaded from the [release page](https://git.ramon.cc/ramon/crossghost/releases/latest) and copied into `<Hitman Install Folder>/Retail/mods/`
+- The old LocalGhost Patcher is **NOT NEEDED!**
 
 ### Activating and Disabling the Mod
 
@@ -42,12 +43,13 @@ To join a lobby, follow these steps:
 
 ```
 host game (RakNet :30000) ⇄ host proxy (127.0.0.1:30001) ⇄ room client
-    ⇄ LocalGhost relay (UDP 30002) ⇄
+    ⇄ CrossGhost server relay (UDP 30002) ⇄
 room client (127.0.0.1:<random>) ⇄ guest game
 ```
 
 1. **Backend.** At startup the DLL patches the game's backend configuration so
-   both storefronts use the LocalGhost server (`src/backend/`).
+   both storefronts use the [CrossGhost server](https://git.ramon.cc/ramon/crossghost-server)
+   (`src/backend/`).
 2. **Hosting.** The game's "create lobby" request (EOS or Steam lobby) is
    rewritten to "local host", a plain RakNet lobby. The plugin records the
    lobby data the guest will need (map, game mode, host key, version) and
@@ -75,7 +77,7 @@ src/common/               Memory access, vtable/IAT hooks, game strings, lobby l
 src/net/                  Room client, relay protocol, host proxy, metadata codec
 src/epic/                 Epic hooks; epic_offsets.h lists every game address used
 src/steam/                Steam hooks and lobby shim; steam_offsets.h lists addresses
-src/ui/room_panel.*       The "Ghost Crossplay" SDK window shared by both builds
+src/ui/room_panel.*       The "CrossGhost" SDK window shared by both builds
 tests/                    Codec/proxy, room tunnel and installer tests
 scripts/                  Dependency download and game installation
 ```
@@ -91,7 +93,7 @@ python scripts/verify-game-build.py --epic '<Epic>\Retail\HITMAN3.exe' --steam '
 ```
 
 `kGameVersion` in `game_build.h` is also the build the room service accepts, so
-LocalGhost's `ghostRooms/service.mjs` must be updated and redeployed alongside.
+the CrossGhost server's `ghostRooms/service.mjs` must be updated and redeployed alongside.
 
 ## Build
 
@@ -100,15 +102,15 @@ PowerShell 7, and Node.js 20+ for the room tunnel test.
 
 ```powershell
 ./scripts/fetch-deps.ps1          # once: ZHMModSDK 4.2.1 and DirectX-Headers
-./build.ps1 -NoPublish            # build/Release/GhostCrossplay.dll
+./build.ps1 -NoPublish            # build/Release/CrossGhost.dll
 ./build.ps1                       # also copies the DLL to dist/
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-`-PublicOrigin` selects the LocalGhost server compiled into the DLL (default
+`-PublicOrigin` selects the CrossGhost server compiled into the DLL (default
 `https://hitmanghost.ramon.cc`). Close HITMAN before running the tests; they
-bind UDP 30000. The `room-tunnel` test needs a LocalGhost checkout next to this
-folder (`../localghost`, or set `GHOST_LOCALGHOST_DIR`).
+bind UDP 30000. The `room-tunnel` test needs a [crossghost-server](https://git.ramon.cc/ramon/crossghost-server)
+checkout next to this folder (`../localghost`, or set `GHOST_LOCALGHOST_DIR`).
 
 ### Building on Linux
 
@@ -120,7 +122,7 @@ and the MSVC CRT/Windows SDK from [xwin](https://github.com/Jake-Shadle/xwin):
 xwin --accept-license --cache-dir /root/.xwin-cache splat --output /xwin
 
 bash scripts/fetch-deps.sh
-bash scripts/build-linux.sh        # dist/GhostCrossplay.dll
+bash scripts/build-linux.sh        # dist/CrossGhost.dll
 ctest --test-dir build-linux --output-on-failure
 ```
 
@@ -133,14 +135,14 @@ native Windows host, so only `relay-metadata` runs here.
 
 Merging to `main` runs `.forgejo/workflows/release.yml` on a `docker` runner in
 `messense/cargo-xwin:0.23.1` (clang 19, lld, CMake, Ninja and Wine). It installs
-the xwin MSVC CRT/Windows SDK, cross-builds `dist/GhostCrossplay.dll`, runs the
+the xwin MSVC CRT/Windows SDK, cross-builds `dist/CrossGhost.dll`, runs the
 tests under Wine and publishes a `v0.<run_number>` release with the DLL
 attached. The release notes are generated from the commits since the previous
 release, including the merge request numbers referenced in their titles.
 
 ## Install
 
-Install the same DLL on both PCs. ZHMModSDK 4.2.1 and the Ghost Mode assets must
+Install the same DLL on both PCs. ZHMModSDK 4.2.1 and CrossGhost Assets must
 already be installed. Close HITMAN, then (elevated for Program Files):
 
 ```powershell
@@ -148,15 +150,23 @@ already be installed. Close HITMAN, then (elevated for Program Files):
 ./scripts/install.ps1 -GameRoot 'C:\Program Files (x86)\Steam\steamapps\common\HITMAN 3'
 ```
 
-The script copies `dist/GhostCrossplay.dll` into `Retail/mods`, backs up older
-plugin DLLs and enables `[GhostCrossplay]` in `Retail/mods.ini`.
+The script copies `dist/CrossGhost.dll` into `Retail/mods`, backs up older
+plugin DLLs (including the pre-rename `GhostCrossplay.dll`) and enables
+`[CrossGhost]` in `Retail/mods.ini`.
 
 ## Use
 
-- **Host:** open Ghost Mode and choose a map. In the **Ghost Crossplay** SDK
+- **Host:** open Ghost Mode and choose a map. In the **CrossGhost** SDK
   window press **Host** and share the room code.
-- **Join:** open Ghost Mode, enter the code in the **Ghost Crossplay** window
+- **Join:** open Ghost Mode, enter the code in the **CrossGhost** window
   and press **Join**.
 
 Do not run the Epic and Steam games on the same PC at the same time; both use
 UDP 30000 and 30001.
+
+## Upgrading from GhostCrossplay.dll
+
+The plugin was renamed from `GhostCrossplay.dll` to `CrossGhost.dll`. Delete
+`Retail/mods/GhostCrossplay.dll` (or run `scripts/install.ps1`, which backs it
+up) so the old and new plugin never load together, then enable **CrossGhost**
+in the ZHMModSDK mod list.

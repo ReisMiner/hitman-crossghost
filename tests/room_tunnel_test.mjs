@@ -1,4 +1,4 @@
-// Runs GhostRoomTests against a real LocalGhost room service on loopback.
+// Runs GhostRoomTests against a real CrossGhost server room service on loopback.
 // Usage: node room_tunnel_test.mjs <path to ghostRooms/service.mjs> <GhostRoomTests.exe>
 import { spawn } from 'node:child_process';
 import { pathToFileURL } from 'node:url';

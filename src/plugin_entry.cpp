@@ -19,7 +19,7 @@ public:
     explicit UnsupportedPlugin(std::string reason) : m_reason(std::move(reason)) {}
 
     void OnDrawMenu() override {
-        if (ImGui::Begin("Ghost Crossplay", nullptr, ImGuiWindowFlags_NoCollapse))
+        if (ImGui::Begin("CrossGhost", nullptr, ImGuiWindowFlags_NoCollapse))
             ImGui::TextWrapped("%s", m_reason.c_str());
         ImGui::End();
     }
