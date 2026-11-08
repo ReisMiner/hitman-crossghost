@@ -71,17 +71,6 @@ struct Hooks {
 
 // --- Game patches -------------------------------------------------------------
 
-int __fastcall ReturnZero(void*) { return 0; }
-
-// Report no VR headset or runtime to the game.
-void DisableVrDetection() {
-    HMODULE openvr = GetModuleHandleW(L"openvr_api.dll");
-    if (openvr == nullptr) openvr = LoadLibraryW(L"openvr_api.dll");
-    if (openvr == nullptr) return;
-    for (const char* name : {"VR_IsHmdPresent", "VR_IsRuntimeInstalled"})
-        RedirectFunction(reinterpret_cast<void*>(GetProcAddress(openvr, name)), reinterpret_cast<void*>(&ReturnZero));
-}
-
 // The host's NAT check fails on a RakNet local-host lobby; skip it and its popup.
 void DisableHostNatWarning() {
     const uint8_t returnTrue[] = {0xb0, 0x01, 0xc3};   // mov al, 1; ret
@@ -321,7 +310,6 @@ public:
 
     void Init() override {
         m_backendReady = m_backend.Apply(Storefront::Epic);
-        DisableVrDetection();
         g_gameVersion = ReadGameVersion();
         // The room client delivers guest traffic here; native RakNet keeps UDP 30000.
         StartHostProxy(kHostProxyPort);
