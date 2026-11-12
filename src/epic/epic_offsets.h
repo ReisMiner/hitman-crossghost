@@ -41,8 +41,20 @@ constexpr uintptr_t kRakPeerVtable = 0x1f47058;
 constexpr uintptr_t kRakPeerStartup = 0x11334d0;            // slot 1 (slot 6 is now IsInSecurityExceptionList)
 constexpr uintptr_t kRakNetSocketVtable = 0x1f476f0;         // RNS2_Windows
 constexpr uintptr_t kEpicSocketOverrideVtable = 0x1f30d50;  // primary vtable; the socket stores the object itself
+// ReplicaManager3 (ZReplicaManager). OnNewConnection only creates a replication
+// connection when +0x38 (auto-create) is set; natively the game creates them
+// when the FullyConnectedMesh2 join completes. +0x50 world: +0x00 connection
+// array, +0x08 count; connection +0x20 remote RakNet GUID.
 constexpr uintptr_t kReplicaManagerVtable = 0x1f307e8;
 constexpr uintptr_t kReplicaOnNewConnection = 0x114ecd0;    // slot 8
+constexpr size_t kReplicaAutoCreate = 0x38;
+constexpr size_t kReplicaWorld = 0x50;
+constexpr size_t kReplicaConnectionGuid = 0x20;
+
+// Network object pointer: +0x13 session active (set when the mesh join is
+// accepted; until then the game drops replicas it receives).
+constexpr uintptr_t kNetworkObject = 0x3187eb0;
+constexpr size_t kNetworkSessionActive = 0x13;
 
 // --- Engine helpers ---------------------------------------------------------
 constexpr uintptr_t kDelegateAdd = 0x69950;
