@@ -13,8 +13,10 @@
 #include "IPluginInterface.h"
 
 #include "backend/backend_patch.h"
+#include "common/diag_log.h"
 #include "common/memory.h"
 #include "common/native_lobby.h"
+#include "epic/epic_diag.h"
 #include "epic/epic_guest.h"
 #include "epic/epic_offsets.h"
 #include "net/deferred_room_close.h"
@@ -157,6 +159,8 @@ void EnableNativeUdp(bool hosting) {
         return;
     }
     InterlockedExchangePointer(overrideSlot, nullptr);
+    diag::Log("net: native UDP enabled for the {} (EOS override was {})", hosting ? "host" : "guest",
+        layerOverride != nullptr ? "present" : "already removed");
     g_transportIssue.store("");
     if (hosting) {
         ResetHostProxyPeer();
@@ -174,19 +178,25 @@ int __fastcall RakPeerStartupDetour(void* self, unsigned short maxConnections, v
 }
 
 void __fastcall NetworkConnectingEnterDetour(void* self) {
+    diag::Log("net: network state Connecting (guest join {})", g_guest.Requested() ? "active" : "inactive");
     g_hooks.networkConnectingEnter.Original<VoidMethod>()(self);
     // The guest must have real UDP before Joining starts connecting.
     if (g_guest.Requested()) EnableNativeUdp(false);
 }
 
 void __fastcall NetworkConnectedEnterDetour(void* self) {
+    diag::Log("net: network state Connected (guest join {})", g_guest.Requested() ? "active" : "inactive");
     g_hooks.networkConnectedEnter.Original<VoidMethod>()(self);
     EnableNativeUdp(!g_guest.Requested());
+    if (const char* issue = g_transportIssue.load(); issue[0]) diag::Log("net: native UDP not enabled: {}", issue);
 }
 
 // Sets the replica manager's per-connection enable flag (+0x38) before the
 // native handler runs.
 void __fastcall ReplicaNewConnectionDetour(void* self, void* guid, void* address) {
+    uint64_t guidValue = 0;
+    if (IsReadable(guid, sizeof(guidValue))) guidValue = *static_cast<uint64_t*>(guid);
+    diag::Log("net: replica manager new connection, RakNet GUID {:#x}", guidValue);
     if (IsReadable(FieldPointer<void>(self, 0x38), 1)) *FieldPointer<uint8_t>(self, 0x38) = 1;
     g_hooks.replicaNewConnection.Original<PeerCallback>()(self, guid, address);
 }
@@ -195,7 +205,10 @@ void __fastcall ReplicaNewConnectionDetour(void* self, void* guid, void* address
 
 void __fastcall ObserveHostLobbyWrite(void*, void* key, void* value) {
     std::string keyText, valueText;
-    if (ReadGameString(key, keyText) && ReadGameString(value, valueText)) PublishHostLobbyField(keyText, valueText);
+    if (ReadGameString(key, keyText) && ReadGameString(value, valueText)) {
+        diag::Log("host: lobby data write {} = '{}'", keyText, diag::Brief(valueText));
+        PublishHostLobbyField(keyText, valueText);
+    }
 }
 
 void SetHostLobbyObserver(void* state, bool add) {
@@ -208,6 +221,7 @@ void SetHostLobbyObserver(void* state, bool add) {
 }
 
 void __fastcall LocalHostEnterDetour(void* self) {
+    diag::Log("host: ZLobbyCreateLocalHost enter {}", self);
     g_roomClose.Clear();
     g_room.Cancel();
     BeginHostLobby();
@@ -219,6 +233,7 @@ void __fastcall LocalHostEnterDetour(void* self) {
 }
 
 void __fastcall LocalHostExitDetour(void* self) {
+    diag::Log("host: ZLobbyCreateLocalHost exit {}", self);
     if (g_observedHostState == self) SetHostLobbyObserver(self, false);
     g_hostLobbyActive.store(false, std::memory_order_release);
     EndHostLobby();
@@ -239,8 +254,16 @@ void* __fastcall LobbyIdleUpdateDetour(void* state, void* transition) {
 
     bool redirectToConnected = false;
     if (int* request = lobby::RequestField(state)) {
+        static int lastRequest = -1;
+        if (*request != lastRequest) {
+            diag::Log("lobby: ZLobbyIdle request {} -> {}", lastRequest, *request);
+            lastRequest = *request;
+        }
         redirectToConnected = g_guest.TakeJoinRequest(state, *request);
-        if (!redirectToConnected && *request == lobby::kCreate) *request = lobby::kLocalHost;
+        if (!redirectToConnected && *request == lobby::kCreate) {
+            diag::Log("host: lobby request create (2) -> local host (3)");
+            *request = lobby::kLocalHost;
+        }
     }
 
     void* result = g_hooks.lobbyIdleUpdate.Original<UpdateMethod>()(state, transition);
@@ -262,6 +285,7 @@ void __fastcall LobbyConnectedExitDetour(void* self) {
 }
 
 void* __fastcall LobbyConnectedUpdateDetour(void* self, void* transition) {
+    LogSessionState();
     if (g_guest.IsGuestLobby(self))
         return GameFunction<UpdateMethod>(rva::kLocalHostUpdate)(self, transition);
     return g_hooks.connectedUpdate.Original<UpdateMethod>()(self, transition);
@@ -309,8 +333,10 @@ public:
     }
 
     void Init() override {
+        diag::Open();
         m_backendReady = m_backend.Apply(Storefront::Epic);
         g_gameVersion = ReadGameVersion();
+        diag::Log("CrossGhost diagnostic build, Epic, game {}, backend patched {}", g_gameVersion, m_backendReady.load());
         // The room client delivers guest traffic here; native RakNet keeps UDP 30000.
         StartHostProxy(kHostProxyPort);
         ReportOpenNatToEos();
@@ -318,10 +344,24 @@ public:
 
     void OnEngineInitialized() override {
         m_backendReady = m_backend.Apply(Storefront::Epic);
-        if (!g_hooksInstalled.load(std::memory_order_acquire)) InstallHooks();
+        if (!g_hooksInstalled.load(std::memory_order_acquire)) {
+            const bool installed = InstallHooks();
+            diag::Log("hooks {}", installed ? "installed" : "NOT installed (unsupported executable)");
+        }
     }
 
-    void OnDrawUI(bool) override { g_roomClose.Tick(g_room); }
+    void OnDrawUI(bool) override {
+        g_roomClose.Tick(g_room);
+        // The guest logs its own room changes in Guest::Tick.
+        static std::string lastStatus;
+        if (!g_guest.Requested()) {
+            const auto room = g_room.Get();
+            if (room.status != lastStatus) {
+                diag::Log("room: {} (code '{}')", room.status, room.code);
+                lastStatus = room.status;
+            }
+        }
+    }
 
     void OnDrawMenu() override {
         const bool hooks = g_hooksInstalled.load(std::memory_order_acquire);
@@ -342,6 +382,7 @@ public:
         std::string code;
         switch (ui::DrawRoomPanel(panel, code)) {
             case ui::RoomPanelAction::Host:
+                diag::Log("host: Host pressed");
                 g_guest.CancelForHosting();
                 g_room.Start(true, {}, kHostProxyPort, {}, "epic");
                 break;

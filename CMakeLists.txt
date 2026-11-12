@@ -50,8 +50,10 @@ add_library(CrossGhost SHARED
     src/plugin_entry.cpp
     src/game_build.cpp
     src/backend/backend_patch.cpp
+    src/common/diag_log.cpp
     src/common/memory.cpp
     src/common/sha256.cpp
+    src/epic/epic_diag.cpp
     src/epic/epic_guest.cpp
     src/epic/epic_plugin.cpp
     src/steam/steam_lobby_shim.cpp
